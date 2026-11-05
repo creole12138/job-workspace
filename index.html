@@ -201,32 +201,24 @@ window.enterDemo=()=>{DEMO=true;USER=null;Object.assign(S,demoData());setHeader(
 function showLogin(msg){
   $("#main").innerHTML=`<section class="rv" style="max-width:400px;margin:48px auto">
   <h2 style="margin:0;font-size:17px">登录求职工作台</h2>
-  <button class="btn" onclick="googleLogin()">使用 Google 账号登录</button>
-  <div class="sub" style="text-align:center">或使用邮箱</div>
   <label class="f">邮箱<input id="lg_email" type="email" autocomplete="email"></label>
-  <label class="f">密码<input id="lg_pw" type="password" autocomplete="current-password"></label>
-  <div class="row"><button class="btn pri" onclick="doLogin()">登录</button><button class="btn" onclick="forgotPw()">忘记密码</button></div>
-  <div class="sub" id="lg_msg">${esc(msg||"")}</div>
+  <button class="btn pri" onclick="sendLink()">发送登录链接</button>
+  <div class="sub" id="lg_msg">${esc(msg||"输入邮箱后会收到一封邮件，点里面的链接即可登录，不需要密码。")}</div>
   <hr style="border:0;border-top:1px solid var(--line);width:100%">
   <div class="row"><button class="btn" onclick="enterDemo()">查看示例</button><span class="sub">用虚构数据体验全部功能，不需要登录，改动不会保存。</span></div>
   </section>`;
   setSync("未登录");
 }
 const lgMsg=t=>{const el=$("#lg_msg");if(el)el.textContent=t};
-window.doLogin=async()=>{const{error}=await sb.auth.signInWithPassword({email:$("#lg_email").value.trim(),password:$("#lg_pw").value});if(error)lgMsg(error.message==="Invalid login credentials"?"邮箱或密码不对":error.message)};
-window.googleLogin=async()=>{const{error}=await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:HOME}});if(error)lgMsg(error.message)};
-window.forgotPw=async()=>{const email=$("#lg_email").value.trim();if(!email){lgMsg("先在上面填写邮箱");return}
-  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:HOME});lgMsg(error?error.message:"如果这个邮箱已注册，会收到一封重设密码的邮件。")};
-function showResetPw(){
-  $("#main").innerHTML=`<section class="rv" style="max-width:400px;margin:48px auto"><h2 style="margin:0;font-size:17px">设置新密码</h2>
-  <label class="f">新密码（至少 6 位）<input id="np" type="password" autocomplete="new-password"></label>
-  <button class="btn pri" onclick="saveNewPw()">保存新密码</button><div class="sub" id="lg_msg"></div></section>`}
-window.saveNewPw=async()=>{const{error}=await sb.auth.updateUser({password:$("#np").value});if(error){lgMsg(error.message);return}toast("密码已更新");RESETTING=false;render();loadAll()};
+window.sendLink=async()=>{const email=$("#lg_email").value.trim();if(!email){lgMsg("请填写邮箱");return}
+  lgMsg("发送中…");
+  const{error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:HOME}});
+  lgMsg(error?(/rate/i.test(error.message)?"发送太频繁，请过几分钟再试":/signups not allowed|not found/i.test(error.message)?"这个邮箱没有开通":error.message):"登录链接已发送，请查收邮件（可能在垃圾邮件里）。");
+};
 window.logout=async()=>{if(DEMO){DEMO=false;COLS.forEach(c=>S[c]=[]);setHeader();showLogin();return}await sb.auth.signOut()};
 let RESETTING=false;
 sb.auth.onAuthStateChange((ev,session)=>{
   const u=session?.user||null;
-  if(ev==="PASSWORD_RECOVERY"){RESETTING=true;USER=u;DEMO=false;setHeader();showResetPw();return}
   if(u&&(!USER||USER.id!==u.id)){USER=u;DEMO=false;setHeader();if(!RESETTING){render();loadAll()}}
   else if(!u&&!DEMO){USER=null;COLS.forEach(c=>S[c]=[]);setHeader();showLogin()}
 });
