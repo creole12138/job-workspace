@@ -250,9 +250,9 @@ textarea{min-height:64px;resize:vertical}
 <script>
 const STAGES=["已投递","简历评估","笔试","一面","二面","HR 面","Offer","未通过"];
 const INTERVIEW_STAGES=["一面","二面","HR 面"];
-const CHANNELS=["官网","内推","招聘平台"];
+const CHANNELS=["官网","内推","招聘平台","其他"];
 const EVTYPES=["笔试","一面","二面","HR 面","其他"];
-const QTYPES=["专业题","行为题","案例题","背景题"];
+const QTYPES=["专业题","行为题","案例题","背景题","其他"];
 const STALE_DAYS=7;
 const S={tab:location.hash==="#reviews"?"reviews":location.hash==="#offers"?"offers":"apps",view:"list",calMonth:null,apps:[],reviews:[],offers:[],rvCo:"",rvType:"",editable:true};
 try{S.view=localStorage.getItem("jd.view")||"list";if(S.view==="cal")S.view="list"}catch(e){}
@@ -532,7 +532,7 @@ window.showCoReviews=id=>{const a=S.apps.find(x=>x.id===id);const ids=S.apps.fil
 function reviewHTML(r,compact){
   const a=S.apps.find(x=>x.id===r.appId);
   const qs=(r.questions||[]).filter(q=>!S.rvType||compact||q.type===S.rvType);
-  const all=r.questions||[];const QC={"专业题":"var(--ink)","行为题":"#5d6369","案例题":"var(--lime)","背景题":"#b9ece2"};
+  const all=r.questions||[];const QC={"专业题":"var(--ink)","行为题":"#5d6369","案例题":"var(--lime)","背景题":"#b9ece2","其他":"#c9ced3"};
   const weakN=all.filter(q=>q.weak).length;
   return `<article class="rv ${compact?"":"click"}" ${compact?"":`role="button" tabindex="0" onclick="if(!event.target.closest('button'))editReview('${r.id}')"`}><div class="ahead"><span class="avatar">${avatarOf(a?.company)}</span><div style="flex:1;min-width:0"><b>${a?`<button class="linkish" onclick="filterApps('company','${esc(a.company)}')">${esc(a.company)}</button>`:"已删除"}</b><div class="sub">${esc(a?.role||"")}</div></div><span class="chip stage">${esc(r.round)}</span></div>
   <div class="row sub"><span class="mono">${esc(r.date)}</span><span>· ${all.length} 题</span>${weakN?`<span class="chip bad">${weakN} 处没答好</span>`:`<span class="chip good">都答上了</span>`}</div>
@@ -595,7 +595,7 @@ window.editOffer=id=>{const o=id?structuredClone(S.offers.find(x=>x.id===id)):{i
   draft=o;
   openModal(`<h2>${id?"编辑 Offer":"新增 Offer"}</h2><div class="grid2">
   <label class="f">公司<input id="o_company" value="${esc(o.company)}"></label><label class="f">岗位<input id="o_role" value="${esc(o.role)}"></label>
-  <label class="f">城市<input id="o_city" value="${esc(o.city)}"></label><label class="f">币种<select id="o_currency">${opt(["SGD","CNY","USD"],o.currency)}</select></label>
+  <label class="f">城市<input id="o_city" value="${esc(o.city)}"></label><label class="f">币种<select id="o_currency">${opt(["SGD","CNY","USD","其他"],o.currency)}</select></label>
   <label class="f">月薪<input type="number" id="o_monthly" value="${esc(o.monthly)}"></label><label class="f">月数<input type="number" step="0.5" id="o_months" value="${esc(o.months)}"></label>
   <label class="f">公积金 / CPF 比例 %<input type="number" step="0.5" id="o_fundPct" value="${esc(o.fundPct)}"></label><label class="f">签字费 / 其他现金（年）<input type="number" id="o_extraCash" value="${esc(o.extraCash)}"></label>
   <label class="f">工作强度 1–5（5 最累）<input type="number" min="1" max="5" id="o_intensity" value="${esc(o.intensity)}"></label><label class="f">成长空间 1–5<input type="number" min="1" max="5" id="o_growth" value="${esc(o.growth)}"></label>
