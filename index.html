@@ -162,12 +162,12 @@ const setSync=t=>{$("#sync").textContent=t};
 async function save(c,obj){
   obj.updatedAt=new Date().toISOString();
   const i=S[c].findIndex(x=>x.id===obj.id);i>=0?S[c][i]=obj:S[c].push(obj);render();
-  const{error}=await sb.from("items").upsert({id:obj.id,kind:c,data:obj,user_id:USER.id});
+  const{error}=await sb.from("items").upsert({id:obj.id,kind:c,data:obj,user_id:USER.id},{onConflict:"user_id,id"});
   toast(error?"保存失败："+error.message:"已保存");
 }
 async function remove(c,id){
   S[c]=S[c].filter(x=>x.id!==id);render();
-  const{error}=await sb.from("items").delete().eq("id",id);
+  const{error}=await sb.from("items").delete().eq("user_id",USER.id).eq("id",id);
   toast(error?"删除失败："+error.message:"已删除");
 }
 const newId=p=>p+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -186,7 +186,7 @@ async function seedExample(){
     {kind:"offers",data:{id:"of_example",example:true,company:"示例科技（虚构）",role:"AI 产品经理",city:"新加坡",currency:"SGD",monthly:"9000",months:"13",fundPct:"17",extraCash:"5000",intensity:3,growth:4,fit:4,perks:"每年 18 天年假，医疗保险，远程 2 天/周"}},
     {kind:"meta",data:{id:"meta_seeded"}}];
   const rows=ex.map(e=>({id:e.data.id,kind:e.kind,data:e.data,user_id:USER.id}));
-  const{error}=await sb.from("items").upsert(rows);
+  const{error}=await sb.from("items").upsert(rows,{onConflict:"user_id,id"});
   if(!error)ex.forEach(e=>{if(S[e.kind])S[e.kind].push(e.data)});
 }
 function showLogin(msg){
