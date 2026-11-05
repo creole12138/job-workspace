@@ -59,6 +59,18 @@ button,select,input,textarea{font:inherit;color:inherit}
 .tile,.acard,.rv,.ocard,.calbox,.empty,.modal,.tabs button,.seg,.sync,.btn{backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}
 .tile,.acard,.rv,.ocard,.empty,.modal{border:1px solid var(--glass-line);box-shadow:var(--shadow)}
 .modal{background:var(--solid)}
+/* clickable */
+.click,.acard,.cc,.mrow,.todo{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.tile.click:hover,.rv.click:hover,.ocard.click:hover,.acard:hover{transform:translateY(-2px);box-shadow:0 14px 34px -14px rgba(20,22,24,.25)}
+.stalebox.click:hover{filter:brightness(.97)}
+.fstage,.fdrop{cursor:pointer}
+.fhit{fill:transparent;transition:fill .15s}
+.fstage:hover .fhit,.fdrop:hover .fhit,.fstage:focus-visible .fhit,.fdrop:focus-visible .fhit{fill:rgba(116,215,196,.16)}
+.fstage:focus,.fdrop:focus{outline:none}
+.fchip{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--on-ink);border-radius:999px;padding:5px 6px 5px 14px;font-size:13px}
+.fchip button{border:0;background:rgba(255,255,255,.18);color:inherit;width:22px;height:22px;border-radius:999px;cursor:pointer;font-size:11px}
+.linkish{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:var(--lime);text-underline-offset:3px}
+#appsList{scroll-margin-top:80px}
 /* overview: left = KPIs + funnel ring, right = calendar */
 .ov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:12px;margin-top:12px;align-items:stretch}
 .ovl{display:flex}.ovl>.tile{flex:1}
@@ -131,6 +143,9 @@ button,select,input,textarea{font:inherit;color:inherit}
 .card{background:var(--surface);border-radius:var(--r-md);padding:12px;cursor:grab;display:flex;flex-direction:column;gap:8px}
 .card.stale{box-shadow:inset 0 0 0 2px var(--warn)}
 .card .next{font-size:12px}
+.card{cursor:pointer}
+.nextbtn{width:30px;height:30px;flex:none;border-radius:999px;border:0;background:var(--ink);color:var(--on-ink);font-size:14px;cursor:pointer;display:grid;place-items:center}
+.nextbtn:hover{background:var(--lime);color:var(--on-lime)}
 /* calendar card */
 .cal-head{display:flex;align-items:center;gap:6px}
 .cal-head b{white-space:nowrap}
@@ -363,16 +378,17 @@ function funnelSVG(steps,n){
   const rs=steps.map(([,v])=>n?Math.max(rmin,R*Math.sqrt(v/n)):rmin);
   let band="",rings="",txt="";
   for(let i=0;i<N-1;i++)band+=`<polygon points="${xs[i]},${cy-rs[i]*.72} ${xs[i+1]},${cy-rs[i+1]*.72} ${xs[i+1]},${cy+rs[i+1]*.72} ${xs[i]},${cy+rs[i]*.72}" fill="var(--band)"/>`;
-  steps.forEach(([st,v],i)=>{const r=rs[i],sw=Math.max(7,r*.3),rr=r-sw/2,C=2*Math.PI*rr,f=n?v/n:0;
+  steps.forEach(([st,v],i)=>{const r=rs[i],sw=Math.max(7,r*.3),rr=r-sw/2,C=2*Math.PI*rr,f=n?v/n:0;const colW=(x1-x0)/(N-1);
+    rings+=`<g class="fstage" role="button" tabindex="0" aria-label="查看到达${st}的投递" onclick="filterApps('reach','${st}')" onkeydown="if(event.key==='Enter')filterApps('reach','${st}')"><rect x="${xs[i]-colW/2}" y="0" width="${colW}" height="${cy+R+4}" rx="18" class="fhit"/>`;
     rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${r}" fill="var(--solid)"/><circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="var(--sunk)" stroke-width="${sw}"/>`;
     if(f>0)rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="${i===N-1?"var(--lime)":"var(--ink)"}" stroke-width="${sw}" stroke-dasharray="${f>=1?C:f*C} ${C}" transform="rotate(-90 ${xs[i]} ${cy})"/>`;
     const pct=n?(v/n*100):0;
-    txt+=`<text x="${xs[i]}" y="${cy+4}" text-anchor="middle" font-size="${r>40?17:13}" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${pct>=99.95?"100":pct.toFixed(pct<10&&pct>0?1:0)}%</text>`;
-    txt+=`<text x="${xs[i]}" y="${cy-R-44}" text-anchor="middle" font-size="15" fill="var(--muted)">${st}</text><text x="${xs[i]}" y="${cy-R-14}" text-anchor="middle" font-size="26" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${v}</text>`;
+    rings+=`<text x="${xs[i]}" y="${cy+4}" text-anchor="middle" font-size="${r>40?17:13}" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${pct>=99.95?"100":pct.toFixed(pct<10&&pct>0?1:0)}%</text>`;
+    rings+=`<text x="${xs[i]}" y="${cy-R-44}" text-anchor="middle" font-size="15" fill="var(--muted)">${st}</text><text x="${xs[i]}" y="${cy-R-14}" text-anchor="middle" font-size="26" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${v}</text></g>`;
     if(i){const prev=steps[i-1][1],drop=prev-v,sc=prev?Math.round(v/prev*100):0;
-      txt+=`<text x="${xs[i]}" y="${cy+R+30}" text-anchor="middle" font-size="15" font-family="Outfit,sans-serif" font-weight="600" fill="var(--bad)">▼${drop}</text><text x="${xs[i]}" y="${cy+R+52}" text-anchor="middle" font-size="13" font-family="Outfit,sans-serif" fill="var(--muted)">↪ ${prev?sc+"%":"–"}</text>`;}
+      txt+=`<g class="fdrop" role="button" tabindex="0" aria-label="查看停在${steps[i-1][0]}、没进入${st}的投递" onclick="filterApps('drop','${st}')" onkeydown="if(event.key==='Enter')filterApps('drop','${st}')"><rect x="${xs[i]-36}" y="${cy+R+10}" width="72" height="50" rx="12" class="fhit"/><text x="${xs[i]}" y="${cy+R+30}" text-anchor="middle" font-size="15" font-family="Outfit,sans-serif" font-weight="600" fill="var(--bad)">▼${drop}</text><text x="${xs[i]}" y="${cy+R+52}" text-anchor="middle" font-size="13" font-family="Outfit,sans-serif" fill="var(--muted)">↪ ${prev?sc+"%":"–"}</text></g>`;}
   });
-  return `<svg viewBox="0 0 ${W} ${H}" class="fsvg" role="img" aria-label="招聘阶段漏斗">${band}${rings}${txt}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="fsvg" aria-label="招聘阶段漏斗，点击某个阶段查看对应投递">${band}${rings}${txt}</svg>`;
 }
 function statsHTML(){
   const A=S.apps,n=A.length;
@@ -382,9 +398,9 @@ function statsHTML(){
   const pct=(a,b)=>b?Math.round(a/b*100)+"%":"–";
   const steps=STAGES.slice(0,7).map(st=>[st,cnt(st)]);
   return `<section class="kpis">
-      <div class="tile"><div class="row"><span class="icon soft">${ICON.send}</span><span class="lbl">投递</span></div><div class="big">${n}</div></div>
-      <div class="tile sage"><div class="row"><span class="icon">${ICON.chat}</span><span class="lbl">进入面试</span></div><div class="big">${inter}<small>${pct(inter,n)}</small></div></div>
-      <div class="tile lime"><div class="row"><span class="icon">${ICON.star}</span><span class="lbl">Offer</span></div><div class="big">${offer}<small>${pct(offer,n)}</small></div></div>
+      <div class="tile click" role="button" tabindex="0" onclick="filterApps('all')"><div class="row"><span class="icon soft">${ICON.send}</span><span class="lbl">投递</span></div><div class="big">${n}</div></div>
+      <div class="tile sage click" role="button" tabindex="0" onclick="filterApps('interview')"><div class="row"><span class="icon">${ICON.chat}</span><span class="lbl">进入面试</span></div><div class="big">${inter}<small>${pct(inter,n)}</small></div></div>
+      <div class="tile lime click" role="button" tabindex="0" onclick="filterApps('offer')"><div class="row"><span class="icon">${ICON.star}</span><span class="lbl">Offer</span></div><div class="big">${offer}<small>${pct(offer,n)}</small></div></div>
     </section>
     <section class="tile ftile"><div class="row"><span class="lbl">阶段转化</span><span class="spacer"></span><span class="fhint">圈内为累计转化率 · <b style="color:var(--bad)">▼</b> 流失人数 · ↪ 较上一阶段</span></div><div class="fscroll">${funnelSVG(steps,n)}</div></section>
     <section class="ov"><div class="ovl">${todoCard()}</div><div class="ovr">${calCard()}</div></section>`;
@@ -397,7 +413,7 @@ function todoCard(){
   return `<div class="tile"><div class="row"><span class="lbl">${S.calSel?`${+S.calSel.slice(5,7)} 月 ${+S.calSel.slice(8)} 日`:"接下来的安排"}</span><span class="chip">${list.length}</span><span class="spacer"></span>${S.calSel?`<button class="btn sm ghost" onclick="S.calSel=null;render()">看全部</button>`:""}</div>
   ${list.length?list.slice(0,6).map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b class="one" style="display:block">${esc(e.app.company)}</b><div class="sub one">${esc(e.type)}${e.clash?" · 时间冲突":""}</div></div></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。点日历上的日期查看。":"暂无笔试 / 面试。"}</span>`}
   ${todos.length?`<div class="row" style="margin-top:6px"><span class="lbl">待办的下一步</span><span class="chip">${todos.length}</span></div>${todos.slice(0,5).map(a=>`<div class="todo" onclick="editApp('${a.id}')"><span class="avatar sm">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="one">${esc(a.nextStep)}</div><div class="sub one">${esc(a.company.replace(/（.*?）/,""))}</div></div>${a.nextAt?`<span class="nl-t">${shortDT(a.nextAt)}</span>`:""}</div>`).join("")}`:""}
-  ${stale.length?`<div class="stalebox"><span class="nl-ic">${ICON.bell}</span><span class="one"><b>${stale.length}</b> 条超过 ${STALE_DAYS} 天没进展：${stale.map(a=>esc(a.company.replace(/（.*?）/,""))).join("、")}</span></div>`:""}</div>`;
+  ${stale.length?`<div class="stalebox click" role="button" tabindex="0" onclick="filterApps('stale')"><span class="nl-ic">${ICON.bell}</span><span class="one"><b>${stale.length}</b> 条超过 ${STALE_DAYS} 天没进展：${stale.map(a=>esc(a.company.replace(/（.*?）/,""))).join("、")}</span></div>`:""}</div>`;
 }
 function calCard(){
   if(!S.calMonth){const d=new Date();S.calMonth=[d.getFullYear(),d.getMonth()]}
@@ -415,10 +431,22 @@ function calCard(){
   <div class="calleg"><span><i class="lg-int"></i>面试</span><span><i class="lg-test"></i>笔试</span><span><i class="lg-clash"></i>时间冲突</span></div>
 </div>`;
 }
+const FILTERS={
+  all:()=>["全部投递",()=>true],
+  interview:()=>["进入面试",a=>INTERVIEW_STAGES.some(st=>reached(a,st))||a.stage==="Offer"],
+  offer:()=>["拿到 Offer",a=>a.stage==="Offer"],
+  stale:()=>[`超过 ${STALE_DAYS} 天没进展`,isStale],
+  reach:st=>[`到达「${st}」`,a=>reached(a,st)],
+  stage:st=>[`当前在「${st}」`,a=>a.stage===st],
+  company:c=>[`${c}`,a=>a.company===c],
+  drop:st=>{const i=STAGES.indexOf(st),prev=STAGES[i-1];return[`停在「${prev}」、没进入「${st}」`,a=>reached(a,prev)&&!reached(a,st)]}};
+window.filterApps=(type,arg)=>{S.filter=type==="all"?null:{type,arg};S.view="list";S.tab="apps";render();
+  requestAnimationFrame(()=>{const el=document.getElementById("appsList");if(el)el.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"})})};
+function filtered(){if(!S.filter)return S.apps;const[,fn]=FILTERS[S.filter.type](S.filter.arg);return S.apps.filter(fn)}
 function renderApps(){
   const stale=S.apps.filter(isStale);
   let h=statsHTML();
-  h+=`<div class="toolbar"><div class="seg" id="viewSeg">${[["list","卡片"],["board","看板"]].map(([k,t])=>`<button data-v="${k}" class="${S.view===k?"on":""}">${t}</button>`).join("")}</div><span class="spacer"></span><button class="btn pri" onclick="editApp()">＋ 新增投递</button></div>`;
+  h+=`<div class="toolbar" id="appsList"><div class="seg" id="viewSeg">${[["list","卡片"],["board","看板"]].map(([k,t])=>`<button data-v="${k}" class="${S.view===k?"on":""}">${t}</button>`).join("")}</div>${S.filter&&S.view==="list"?`<span class="fchip">${esc(FILTERS[S.filter.type](S.filter.arg)[0])} · ${filtered().length}<button onclick="filterApps('all')" aria-label="清除筛选">✕</button></span>`:""}<span class="spacer"></span><button class="btn pri" onclick="editApp()">＋ 新增投递</button></div>`;
   if(!S.apps.length)return h+emptyBox("还没有投递记录。点「新增投递」添加第一条。");
   h+=S.view==="board"?boardHTML():listHTML();
   return h;
@@ -429,7 +457,8 @@ function progBar(a){const steps=7;let i=a.stage==="未通过"?Math.max(...(a.his
 const stageChip=a=>`<span class="chip ${a.stage==="未通过"?"bad":a.stage==="Offer"?"good":"stage"}">${esc(a.stage)}</span>`;
 const shortDT=s=>s?`${+s.slice(5,7)}/${+s.slice(8,10)}${s.length>10?" "+s.slice(11,16):""}`:"";
 function listHTML(){
-  return `<div class="cards">${[...S.apps].sort((a,b)=>(b.appliedAt||"").localeCompare(a.appliedAt||"")).map(a=>{const d=daysSince(a.progressAt||a.appliedAt);const rc=rvCount(a);
+  const L=filtered();if(!L.length)return emptyBox("没有符合这个条件的投递。");
+  return `<div class="cards">${[...L].sort((a,b)=>(b.appliedAt||"").localeCompare(a.appliedAt||"")).map(a=>{const d=daysSince(a.progressAt||a.appliedAt);const rc=rvCount(a);
   return `<article class="acard ${isStale(a)?"stale":""}" onclick="if(!event.target.closest('button'))editApp('${a.id}')" tabindex="0">
     <div class="ahead"><span class="avatar">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="co">${esc(a.company.replace(/（.*?）/,""))}</div><div class="sub one">${esc(a.role)}</div></div>${stageChip(a)}</div>
     ${progBar(a)}
@@ -438,15 +467,15 @@ function listHTML(){
 }
 function boardHTML(){
   return `<div class="board">${STAGES.map(st=>{const list=S.apps.filter(a=>a.stage===st);
-    return `<div class="col" data-stage="${st}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropCard(event,'${st}')"><h3><span>${st==="Offer"?"Offer":st}</span><span>${list.length}</span></h3>${list.map(cardHTML).join("")}</div>`}).join("")}</div>
+    return `<div class="col" data-stage="${st}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropCard(event,'${st}')"><h3><span>${st}</span><span>${list.length}</span></h3>${list.map(cardHTML).join("")}</div>`}).join("")}</div>
   <p class="note">拖动卡片到其他列即可改阶段；手机上用卡片里的「下一阶段 →」。</p>`;
 }
 function cardHTML(a){
-  const i=STAGES.indexOf(a.stage);const canNext=i<6;
-  return `<div class="card ${isStale(a)?"stale":""}" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${a.id}')">
-    <div><div class="co">${esc(a.company)} ${exChip(a)}</div><div class="sub">${esc(a.role)} · ${esc(a.city)}</div></div>
-    ${progBar(a)}<div class="next">${nextHTML(a)}</div>${staleChip(a)}
-    <div class="acts">${canNext?`<button class="btn sm" onclick="moveStage('${a.id}','${STAGES[i+1]}')">下一阶段 →</button>`:""}<button class="btn sm" onclick="showCoReviews('${a.id}')">复盘 ${rvCount(a)}</button><button class="btn sm" onclick="editApp('${a.id}')">编辑</button></div></div>`;
+  const i=STAGES.indexOf(a.stage);const canNext=i<6;const rc=rvCount(a);
+  return `<div class="card ${isStale(a)?"stale":""}" draggable="true" tabindex="0" ondragstart="event.dataTransfer.setData('text/plain','${a.id}')" onclick="if(!event.target.closest('button'))editApp('${a.id}')">
+    <div class="ahead"><div style="min-width:0;flex:1"><div class="co one">${esc(a.company.replace(/（.*?）/,""))}</div><div class="sub one">${esc(a.role)} · ${esc(a.city)}</div></div>${canNext?`<button class="nextbtn" onclick="moveStage('${a.id}','${STAGES[i+1]}')" title="移到「${STAGES[i+1]}」" aria-label="移到下一阶段：${STAGES[i+1]}">→</button>`:""}</div>
+    ${progBar(a)}${a.nextStep?`<div class="next one">${esc(a.nextStep)}</div>`:""}
+    <div class="afoot">${isStale(a)?`<span class="chip stale">${daysSince(a.progressAt||a.appliedAt)} 天无进展</span>`:""}<span class="spacer"></span>${rc?`<button class="btn sm ghost" onclick="showCoReviews('${a.id}')">复盘 ${rc}</button>`:""}</div></div>`;
 }
 window.dropCard=(e,st)=>{e.preventDefault();e.currentTarget.classList.remove("over");moveStage(e.dataTransfer.getData("text/plain"),st)};
 window.moveStage=(id,st)=>{const a=S.apps.find(x=>x.id===id);if(!a||a.stage===st)return;const o=structuredClone(a);o.history=[...(o.history||[]),o.stage];o.stage=st;o.progressAt=todayStr();save("apps",o)};
@@ -460,7 +489,7 @@ window.calShift=d=>{S.calSel=null;let[y,m]=S.calMonth;m+=d;if(m<0){m=11;y--}if(m
 let draft=null;
 function openModal(html){$("#modalRoot").innerHTML=`<div class="mask" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog">${html}</div></div>`}
 window.closeModal=()=>{$("#modalRoot").innerHTML="";draft=null};
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();if(e.key==="Enter"&&e.target.matches?.(".click,.acard")&&!e.target.closest("svg"))e.target.click()});
 const opt=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${x}</option>`).join("");
 window.editApp=id=>{
   const a=id?structuredClone(S.apps.find(x=>x.id===id)):{id:newId("app"),company:"",role:"",city:"",channel:"官网",appliedAt:todayStr(),stage:"已投递",nextStep:"",nextAt:"",notes:"",events:[],history:[],progressAt:todayStr()};
@@ -505,7 +534,7 @@ function reviewHTML(r,compact){
   const qs=(r.questions||[]).filter(q=>!S.rvType||compact||q.type===S.rvType);
   const all=r.questions||[];const QC={"专业题":"var(--ink)","行为题":"#5d6369","案例题":"var(--lime)","背景题":"#b9ece2"};
   const weakN=all.filter(q=>q.weak).length;
-  return `<article class="rv"><div class="ahead"><span class="avatar">${avatarOf(a?.company)}</span><div style="flex:1;min-width:0"><b>${esc(a?.company||"已删除")}</b><div class="sub">${esc(a?.role||"")}</div></div><span class="chip stage">${esc(r.round)}</span></div>
+  return `<article class="rv ${compact?"":"click"}" ${compact?"":`role="button" tabindex="0" onclick="if(!event.target.closest('button'))editReview('${r.id}')"`}><div class="ahead"><span class="avatar">${avatarOf(a?.company)}</span><div style="flex:1;min-width:0"><b>${a?`<button class="linkish" onclick="filterApps('company','${esc(a.company)}')">${esc(a.company)}</button>`:"已删除"}</b><div class="sub">${esc(a?.role||"")}</div></div><span class="chip stage">${esc(r.round)}</span></div>
   <div class="row sub"><span class="mono">${esc(r.date)}</span><span>· ${all.length} 题</span>${weakN?`<span class="chip bad">${weakN} 处没答好</span>`:`<span class="chip good">都答上了</span>`}</div>
   <div class="qmix">${all.map(q=>`<i style="flex:1;background:${QC[q.type]||"var(--sunk)"}" title="${esc(q.type)}"></i>`).join("")}</div>
   ${qs.map(q=>`<div class="q"><div><span class="chip">${esc(q.type)}</span> <b>${esc(q.q)}</b></div>${q.answer?`<div><span class="qlbl">回答要点</span> ${esc(q.answer)}</div>`:""}${q.weak?`<div class="weak"><span class="qlbl">没答好</span> ${esc(q.weak)}</div>`:""}</div>`).join("")}
@@ -551,7 +580,7 @@ function renderOffers(){
   const best=rows.length>1?rows.reduce((a,b)=>b.c.score>a.c.score?b:a).o.id:null;
   const pips=(v,lbl)=>`<div class="meter"><span>${lbl}</span><div class="pips">${[1,2,3,4,5].map(k=>`<i class="${k<=v?"on":""}"></i>`).join("")}</div></div>`;
   return `<div class="toolbar"><b style="font-size:16px">Offer 对比</b><span class="spacer"></span><button class="btn pri" onclick="editOffer()">＋ 新增 Offer</button></div>
-  ${rows.length?`<div class="ocards">${rows.sort((a,b)=>b.c.score-a.c.score).map(({o,c})=>`<article class="ocard ${o.id===best?"best":""}">
+  ${rows.length?`<div class="ocards">${rows.sort((a,b)=>b.c.score-a.c.score).map(({o,c})=>`<article class="ocard click ${o.id===best?"best":""}" role="button" tabindex="0" onclick="if(!event.target.closest('button'))editOffer('${o.id}')">
     <div class="ahead"><div style="flex:1;min-width:0"><div class="co" style="font-size:16px">${esc(o.company)}</div><div class="sub">${esc(o.role)} · ${esc(o.city)}</div>${o.id===best?'<span class="chip" style="background:var(--ink);color:var(--on-ink);margin-top:6px">综合分最高</span>':""}</div>
       <div style="color:inherit">${donut([{v:c.score,c:o.id===best?"#0d2420":"var(--ink)"},{v:100-c.score,c:"transparent"}],64,c.score)}</div></div>
     <div><div class="lbl">年包（现金）</div><div class="big" style="font-size:32px">${money(c.total,o.currency)}</div><div class="sub">${money(o.monthly,o.currency)} × ${esc(o.months)} 个月${+o.extraCash?` + 其他 ${money(o.extraCash,o.currency)}`:""}</div></div>
