@@ -153,20 +153,24 @@ const daysSince=d=>d?Math.floor((new Date(todayStr())-new Date(d.slice(0,10)))/8
 const fmtDT=s=>s?s.replace("T"," "):"";
 const toast=m=>{const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,1800)};
 
-/* ---------- storage: Supabase (table items: one row per record) ---------- */
+/* ---------- storage: Supabase (owner) or in-page demo data ---------- */
 const SB_URL="https://ezflzkzmdmrxaruflknc.supabase.co";
 const SB_KEY="sb_publishable_GbGmniMN7jbSr7AghMXSaA_AwSr120s";
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
-const COLS=["apps","reviews","offers"];let USER=null;
+const HOME=location.origin+location.pathname;
+const COLS=["apps","reviews","offers"];let USER=null,DEMO=false;
 const setSync=t=>{$("#sync").textContent=t};
+function setHeader(){$("#logoutBtn").hidden=!(USER||DEMO);$("#logoutBtn").textContent=DEMO?"退出示例":"退出登录"}
 async function save(c,obj){
   obj.updatedAt=new Date().toISOString();
   const i=S[c].findIndex(x=>x.id===obj.id);i>=0?S[c][i]=obj:S[c].push(obj);render();
+  if(DEMO){toast("示例模式：改动不会保存");return}
   const{error}=await sb.from("items").upsert({id:obj.id,kind:c,data:obj,user_id:USER.id},{onConflict:"user_id,id"});
   toast(error?"保存失败："+error.message:"已保存");
 }
 async function remove(c,id){
   S[c]=S[c].filter(x=>x.id!==id);render();
+  if(DEMO){toast("示例模式：改动不会保存");return}
   const{error}=await sb.from("items").delete().eq("user_id",USER.id).eq("id",id);
   toast(error?"删除失败："+error.message:"已删除");
 }
@@ -176,46 +180,63 @@ async function loadAll(){
   const{data,error}=await sb.from("items").select("id,kind,data");
   if(error){setSync("读取失败："+error.message);return}
   COLS.forEach(c=>S[c]=data.filter(r=>r.kind===c).map(r=>({...r.data,id:r.id})));
-  if(!data.some(r=>r.kind==="meta"))await seedExample();
   setSync("已同步 · "+(USER.email||""));render();
 }
-async function seedExample(){
-  const ex=[
-    {kind:"apps",data:{id:"app_example",example:true,company:"示例科技（虚构）",role:"AI 产品经理",city:"新加坡",channel:"内推",appliedAt:"2026-10-20",stage:"一面",nextStep:"一面：产品 sense + 项目深挖",nextAt:"2026-11-10T14:00",notes:"内推人：前同事；JD 侧重 Agent 落地",events:[{type:"笔试",at:"2026-10-24T10:00",dur:60},{type:"一面",at:"2026-11-10T14:00",dur:60}],history:["已投递","简历评估","笔试"],progressAt:"2026-10-27"}},
-    {kind:"reviews",data:{id:"rv_example",example:true,appId:"app_example",round:"笔试",date:"2026-10-24",questions:[{type:"案例题",q:"为一款出海 AI 助手设计首月留存提升方案",answer:"先拆新用户激活路径，找到首个价值时刻，再设计引导和召回",weak:"没给出具体指标口径和实验设计"},{type:"行为题",q:"讲一次推动跨团队项目落地的经历",answer:"用 TikTok 项目举例，讲对齐目标和节奏",weak:"结果数据说得不够具体"}],improve:"案例题先说清目标指标和衡量方式；行为题准备 2 个带数字的 STAR 故事"}},
-    {kind:"offers",data:{id:"of_example",example:true,company:"示例科技（虚构）",role:"AI 产品经理",city:"新加坡",currency:"SGD",monthly:"9000",months:"13",fundPct:"17",extraCash:"5000",intensity:3,growth:4,fit:4,perks:"每年 18 天年假，医疗保险，远程 2 天/周"}},
-    {kind:"meta",data:{id:"meta_seeded"}}];
-  const rows=ex.map(e=>({id:e.data.id,kind:e.kind,data:e.data,user_id:USER.id}));
-  const{error}=await sb.from("items").upsert(rows,{onConflict:"user_id,id"});
-  if(!error)ex.forEach(e=>{if(S[e.kind])S[e.kind].push(e.data)});
-}
+/* demo data: fictional, dates relative to today */
+function dshift(n,t){const d=new Date();d.setDate(d.getDate()+n);const s=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");return t?s+"T"+t:s}
+function demoData(){return{
+  apps:[
+    {id:"d1",company:"星图智能（虚构）",role:"AI 产品经理",city:"新加坡",channel:"内推",appliedAt:dshift(-16),stage:"一面",nextStep:"一面：产品 sense + 项目深挖",nextAt:dshift(5,"14:00"),notes:"JD 侧重 Agent 落地",events:[{type:"笔试",at:dshift(-12,"10:00"),dur:60},{type:"一面",at:dshift(5,"14:00"),dur:60}],history:["已投递","简历评估","笔试"],progressAt:dshift(-9)},
+    {id:"d2",company:"云帆科技（虚构）",role:"Forward Deployed Engineer",city:"新加坡",channel:"官网",appliedAt:dshift(-10),stage:"二面",nextStep:"二面：系统设计",nextAt:dshift(5,"14:30"),notes:"和星图一面时间冲突，需改期",events:[{type:"一面",at:dshift(-3,"11:00"),dur:45},{type:"二面",at:dshift(5,"14:30"),dur:60}],history:["已投递","简历评估","一面"],progressAt:dshift(-3)},
+    {id:"d3",company:"远山模型（虚构）",role:"Agent 产品经理",city:"北京",channel:"招聘平台",appliedAt:dshift(-20),stage:"已投递",nextStep:"等 HR 回复",nextAt:"",notes:"",events:[],history:[],progressAt:dshift(-20)},
+    {id:"d4",company:"海湾出行（虚构）",role:"Senior PM, AI Platform",city:"新加坡",channel:"内推",appliedAt:dshift(-40),stage:"Offer",nextStep:"周五前回复 offer",nextAt:dshift(2,"18:00"),notes:"",events:[{type:"HR 面",at:dshift(-8,"16:00"),dur:30}],history:["已投递","简历评估","一面","二面","HR 面"],progressAt:dshift(-4)},
+    {id:"d5",company:"青石数据（虚构）",role:"AI 解决方案架构师",city:"上海",channel:"官网",appliedAt:dshift(-30),stage:"未通过",nextStep:"",nextAt:"",notes:"二面后未通过",events:[],history:["已投递","简历评估","一面","二面"],progressAt:dshift(-14)}],
+  reviews:[
+    {id:"r1",appId:"d1",round:"笔试",date:dshift(-12),questions:[{type:"案例题",q:"为一款出海 AI 助手设计首月留存提升方案",answer:"先拆新用户激活路径，找到首个价值时刻，再设计引导和召回",weak:"没给出具体指标口径和实验设计"},{type:"专业题",q:"如何评估一个 Agent 的任务完成率",answer:"按任务类型定义成功标准，人工抽检 + 自动评测",weak:""}],improve:"案例题先说清目标指标和衡量方式"},
+    {id:"r2",appId:"d2",round:"一面",date:dshift(-3),questions:[{type:"行为题",q:"讲一次推动跨团队项目落地的经历",answer:"用电商项目举例，讲对齐目标和节奏",weak:"结果数据说得不够具体"},{type:"背景题",q:"为什么从产品转向 FDE",answer:"工程 + 业务的复合背景，适合一线落地",weak:""}],improve:"行为题准备 2 个带数字的 STAR 故事"}],
+  offers:[
+    {id:"o1",company:"海湾出行（虚构）",role:"Senior PM, AI Platform",city:"新加坡",currency:"SGD",monthly:"10500",months:"13",fundPct:"17",extraCash:"8000",intensity:4,growth:4,fit:4,perks:"18 天年假，医疗保险，股票"},
+    {id:"o2",company:"示例互联网（虚构）",role:"AI 产品专家",city:"上海",currency:"CNY",monthly:"55000",months:"16",fundPct:"12",extraCash:"0",intensity:5,growth:3,fit:3,perks:"餐补，弹性工作"}]}}
+window.enterDemo=()=>{DEMO=true;USER=null;Object.assign(S,demoData());setHeader();setSync("示例模式 · 虚构数据，改动不保存");render()};
 function showLogin(msg){
-  $("#main").innerHTML=`<section class="rv" style="max-width:380px;margin:48px auto"><h2 style="margin:0;font-size:17px">登录求职工作台</h2>
+  $("#main").innerHTML=`<section class="rv" style="max-width:400px;margin:48px auto">
+  <h2 style="margin:0;font-size:17px">登录求职工作台</h2>
+  <button class="btn" onclick="googleLogin()">使用 Google 账号登录</button>
+  <div class="sub" style="text-align:center">或使用邮箱</div>
   <label class="f">邮箱<input id="lg_email" type="email" autocomplete="email"></label>
-  <label class="f">密码（至少 6 位）<input id="lg_pw" type="password" autocomplete="current-password"></label>
-  <div class="row"><button class="btn pri" onclick="doLogin(false)">登录</button><button class="btn" onclick="doLogin(true)">首次使用：注册</button></div>
-  <div class="sub" id="lg_msg">${esc(msg||"")}</div></section>`;
+  <label class="f">密码<input id="lg_pw" type="password" autocomplete="current-password"></label>
+  <div class="row"><button class="btn pri" onclick="doLogin()">登录</button><button class="btn" onclick="forgotPw()">忘记密码</button></div>
+  <div class="sub" id="lg_msg">${esc(msg||"")}</div>
+  <hr style="border:0;border-top:1px solid var(--line);width:100%">
+  <div class="row"><button class="btn" onclick="enterDemo()">查看示例</button><span class="sub">用虚构数据体验全部功能，不需要登录，改动不会保存。</span></div>
+  </section>`;
   setSync("未登录");
 }
-window.doLogin=async signup=>{
-  const email=$("#lg_email").value.trim(),password=$("#lg_pw").value;
-  const r=signup?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email,password});
-  if(r.error){$("#lg_msg").textContent=r.error.message;return}
-  if(signup&&!r.data.session){$("#lg_msg").textContent="已发送确认邮件，点邮件里的链接后回来登录。"}
-};
-window.logout=async()=>{await sb.auth.signOut()};
+const lgMsg=t=>{const el=$("#lg_msg");if(el)el.textContent=t};
+window.doLogin=async()=>{const{error}=await sb.auth.signInWithPassword({email:$("#lg_email").value.trim(),password:$("#lg_pw").value});if(error)lgMsg(error.message==="Invalid login credentials"?"邮箱或密码不对":error.message)};
+window.googleLogin=async()=>{const{error}=await sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:HOME}});if(error)lgMsg(error.message)};
+window.forgotPw=async()=>{const email=$("#lg_email").value.trim();if(!email){lgMsg("先在上面填写邮箱");return}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:HOME});lgMsg(error?error.message:"如果这个邮箱已注册，会收到一封重设密码的邮件。")};
+function showResetPw(){
+  $("#main").innerHTML=`<section class="rv" style="max-width:400px;margin:48px auto"><h2 style="margin:0;font-size:17px">设置新密码</h2>
+  <label class="f">新密码（至少 6 位）<input id="np" type="password" autocomplete="new-password"></label>
+  <button class="btn pri" onclick="saveNewPw()">保存新密码</button><div class="sub" id="lg_msg"></div></section>`}
+window.saveNewPw=async()=>{const{error}=await sb.auth.updateUser({password:$("#np").value});if(error){lgMsg(error.message);return}toast("密码已更新");RESETTING=false;render();loadAll()};
+window.logout=async()=>{if(DEMO){DEMO=false;COLS.forEach(c=>S[c]=[]);setHeader();showLogin();return}await sb.auth.signOut()};
+let RESETTING=false;
 sb.auth.onAuthStateChange((ev,session)=>{
   const u=session?.user||null;
-  if(u&&(!USER||USER.id!==u.id)){USER=u;$("#logoutBtn").hidden=false;render();loadAll()}
-  else if(!u){USER=null;COLS.forEach(c=>S[c]=[]);$("#logoutBtn").hidden=true;showLogin()}
+  if(ev==="PASSWORD_RECOVERY"){RESETTING=true;USER=u;DEMO=false;setHeader();showResetPw();return}
+  if(u&&(!USER||USER.id!==u.id)){USER=u;DEMO=false;setHeader();if(!RESETTING){render();loadAll()}}
+  else if(!u&&!DEMO){USER=null;COLS.forEach(c=>S[c]=[]);setHeader();showLogin()}
 });
-window.addEventListener("focus",()=>{if(USER&&!document.querySelector(".mask"))loadAll()});
+window.addEventListener("focus",()=>{if(USER&&!RESETTING&&!document.querySelector(".mask"))loadAll()});
 
 /* ---------- tabs ---------- */
 $("#tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.tab=b.dataset.t;try{history.replaceState(null,"","#"+S.tab)}catch(_){}render()});
 
 function render(){
-  if(!USER)return;
+  if(!USER&&!DEMO||RESETTING)return;
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===S.tab));
   $("#main").innerHTML=S.tab==="apps"?renderApps():S.tab==="reviews"?renderReviews():renderOffers();
 }
