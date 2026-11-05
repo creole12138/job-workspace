@@ -55,7 +55,8 @@ button,select,input,textarea{font:inherit;color:inherit}
 .seg button.on{background:var(--lime);color:var(--on-lime);font-weight:500}
 .spacer{flex:1}
 /* overview: left = KPIs + funnel ring, right = calendar */
-.ov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;margin-top:6px;align-items:start}
+.ov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px;margin-top:6px;align-items:stretch}
+.ovr{display:flex;min-width:0}.ovr>.tile{flex:1}
 @media (max-width:960px){.ov{grid-template-columns:1fr}}
 .ovl{display:flex;flex-direction:column;gap:12px;min-width:0}
 .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -81,8 +82,17 @@ button,select,input,textarea{font:inherit;color:inherit}
 .alert{display:flex;gap:10px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:var(--r-md);padding:10px 14px;font-size:13px;margin-top:12px}
 .alert.badc{background:var(--bad-soft);color:var(--bad)}
 /* application cards (list view) */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.acard{background:var(--surface);border-radius:var(--r-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.acard{background:var(--surface);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0;cursor:pointer;transition:transform .15s}
+.acard:hover{transform:translateY(-2px)}
+.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nextline{display:flex;gap:8px;align-items:center;font-size:13px;min-width:0}
+.nextline .one{flex:1;min-width:0}
+.nl-ic{width:24px;height:24px;border-radius:999px;background:var(--sunk);display:grid;place-items:center;flex:none}
+.nl-ic svg{width:13px;height:13px}
+.nl-t{font-family:var(--num);font-size:12px;color:var(--muted);white-space:nowrap}
+.afoot{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--muted)}
+.btn.ghost{border-color:transparent;background:var(--sunk)}
 .acard.stale{box-shadow:inset 0 0 0 2px var(--warn)}
 .ahead{display:flex;gap:10px;align-items:center}
 .avatar{width:38px;height:38px;border-radius:999px;background:var(--sunk);display:grid;place-items:center;font-weight:700;flex:none}
@@ -115,9 +125,9 @@ button,select,input,textarea{font:inherit;color:inherit}
 .cal-head b{white-space:nowrap}
 @media (max-width:420px){.cal-head .chip{display:none}}
 .cal-head b{font-size:16px;font-weight:600}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:4px;flex:1}
 .cal .dow{font-size:11px;color:var(--muted);text-align:center;padding:2px 0}
-.cc{border:0;background:none;color:inherit;border-radius:var(--r-sm);min-height:84px;padding:5px;display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.cc{border:0;background:none;color:inherit;border-radius:var(--r-sm);min-height:70px;padding:5px;display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;cursor:pointer;min-width:0;font:inherit}
 .cc:hover{background:var(--sunk)}
 .cc.out{opacity:.35}
 .cc .d{font-family:var(--num);font-size:12px;width:22px;height:22px;display:grid;place-items:center;border-radius:999px}
@@ -137,9 +147,10 @@ button,select,input,textarea{font:inherit;color:inherit}
 .calleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
 .calleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .lg-int{background:var(--sage-deep)}.lg-test{background:var(--lime)}.lg-clash{background:var(--bad)}
-.meet{background:var(--sunk);border-radius:var(--r-md);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stalebox{display:flex;gap:8px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;min-width:0}
+.stalebox .nl-ic{background:transparent}
 .mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
-.meet .row+.mrow{border-top:0}
+.tile>.row+.mrow{border-top:0}
 .mrow .t{font-family:var(--num);font-size:22px;font-weight:500;line-height:1}
 .mrow .t small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:4px}
 .mrow.clash .t{color:var(--bad)}
@@ -357,7 +368,16 @@ function statsHTML(){
     </div>
     <div class="tile"><div class="row"><span class="lbl">阶段转化</span><span class="spacer"></span><span class="sub">外圈到内圈依次为各阶段，右侧为较上一阶段的转化率</span></div>
       <div class="funnel">${funnelRing(steps,n)}<div class="flegend">${leg}</div></div></div>
+    ${todoCard()}
   </div><div class="ovr">${calCard()}</div></section>`;
+}
+function todoCard(){
+  const ev=allEvents();const now=new Date();
+  const list=(S.calSel?ev.filter(e=>e.at.slice(0,10)===S.calSel):ev.filter(e=>e.end>=now)).sort((a,b)=>a.start-b.start);
+  const stale=S.apps.filter(isStale);
+  return `<div class="tile"><div class="row"><span class="lbl">${S.calSel?`${+S.calSel.slice(5,7)} 月 ${+S.calSel.slice(8)} 日`:"接下来的安排"}</span><span class="chip">${list.length}</span><span class="spacer"></span>${S.calSel?`<button class="btn sm ghost" onclick="S.calSel=null;render()">看全部</button>`:""}</div>
+  ${list.length?list.slice(0,4).map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b class="one" style="display:block">${esc(e.app.company)}</b><div class="sub one">${esc(e.type)}${e.clash?" · 时间冲突":""}</div></div></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。点日历上的日期查看。":"暂无笔试 / 面试。"}</span>`}
+  ${stale.length?`<div class="stalebox"><span class="nl-ic">${ICON.bell}</span><span class="one"><b>${stale.length}</b> 条超过 ${STALE_DAYS} 天没进展：${stale.map(a=>esc(a.company.replace(/（.*?）/,""))).join("、")}</span></div>`:""}</div>`;
 }
 function calCard(){
   if(!S.calMonth){const d=new Date();S.calMonth=[d.getFullYear(),d.getMonth()]}
@@ -369,18 +389,15 @@ function calCard(){
     const cls=[d.getMonth()!==m?"out":"",ds===tStr?"today":"",day.length?(day.some(e=>e.clash)?"has clash":"has"):"",ds<tStr?"past":"",S.calSel===ds?"sel":""].join(" ");
     cells+=`<button class="cc ${cls}" onclick="S.calSel=S.calSel==='${ds}'?null:'${ds}';render()" aria-label="${ds}，${day.length} 场"><span class="d">${d.getDate()}</span>${day.slice(0,2).map(e=>`<span class="evc ${e.clash?"clash":e.type==="笔试"?"test":""}" title="${esc(e.at.slice(11,16)+" "+e.app.company+" "+e.type)}"><span class="txt"><b>${e.at.slice(11,16)} ${esc(e.type)}</b><span>${esc(e.app.company.replace(/（.*?）/,""))}</span></span></span>`).join("")}${day.length>2?`<span class="more">+${day.length-2}</span>`:""}</button>`;
     if(i===34&&new Date(start.getTime()+35*864e5).getMonth()!==m)break;}
-  const list=(S.calSel?ev.filter(e=>e.at.slice(0,10)===S.calSel):ev.filter(e=>e.end>=now)).sort((a,b)=>a.start-b.start);
   const clashN=ev.filter(e=>e.end>=now&&e.clash).length;
   return `<div class="tile calcard"><div class="cal-head"><b>${y} 年 ${m+1} 月</b>${clashN?`<span class="chip bad">${clashN} 场时间冲突</span>`:""}<span class="spacer"></span><button class="btn sm" onclick="calShift(-1)" aria-label="上个月">←</button><button class="btn sm" onclick="S.calMonth=null;S.calSel=null;render()">本月</button><button class="btn sm" onclick="calShift(1)" aria-label="下个月">→</button></div>
   <div class="cal">${["一","二","三","四","五","六","日"].map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div>
   <div class="calleg"><span><i class="lg-int"></i>面试</span><span><i class="lg-test"></i>笔试</span><span><i class="lg-clash"></i>时间冲突</span></div>
-  <div class="meet"><div class="row"><b>${S.calSel?`${+S.calSel.slice(5,7)} 月 ${+S.calSel.slice(8)} 日`:"接下来的安排"}</b><span class="chip">${list.length}</span><span class="spacer"></span>${S.calSel?`<button class="btn sm" onclick="S.calSel=null;render()">看全部</button>`:""}</div>
-  ${list.length?list.slice(0,6).map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b>${esc(e.app.company)}</b><div class="sub">${esc(e.app.role)}</div></div><span class="chip ${e.clash?"bad":e.type==="笔试"?"good":"stage"}">${esc(e.type)}</span></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。":"暂无。在投递里添加笔试 / 面试时间即可显示。"}</span>`}</div></div>`;
+</div>`;
 }
 function renderApps(){
   const stale=S.apps.filter(isStale);
   let h=statsHTML();
-  if(stale.length)h+=`<div class="alert"><span class="icon" style="background:transparent;color:inherit">${ICON.bell}</span><span><b>${stale.length}</b> 条投递超过 ${STALE_DAYS} 天没进展：${stale.map(a=>esc(a.company)).join("、")}</span></div>`;
   h+=`<div class="toolbar"><div class="seg" id="viewSeg">${[["list","卡片"],["board","看板"]].map(([k,t])=>`<button data-v="${k}" class="${S.view===k?"on":""}">${t}</button>`).join("")}</div><span class="spacer"></span><button class="btn pri" onclick="editApp()">＋ 新增投递</button></div>`;
   if(!S.apps.length)return h+emptyBox("还没有投递记录。点「新增投递」添加第一条。");
   h+=S.view==="board"?boardHTML():listHTML();
@@ -390,16 +407,15 @@ function progBar(a){const steps=7;let i=a.stage==="未通过"?Math.max(...(a.his
   const cls=a.stage==="未通过"?"bad":a.stage==="Offer"?"offer":"";
   return `<div class="prog ${cls}" title="${esc(a.stage)}">${Array.from({length:steps},(_,k)=>`<i class="${k<=i?"on":""}"></i>`).join("")}</div>`}
 const stageChip=a=>`<span class="chip ${a.stage==="未通过"?"bad":a.stage==="Offer"?"good":"stage"}">${esc(a.stage)}</span>`;
+const shortDT=s=>s?`${+s.slice(5,7)}/${+s.slice(8,10)}${s.length>10?" "+s.slice(11,16):""}`:"";
 function listHTML(){
-  return `<div class="cards">${[...S.apps].sort((a,b)=>(b.appliedAt||"").localeCompare(a.appliedAt||"")).map(a=>`<article class="acard ${isStale(a)?"stale":""}">
-    <div class="ahead"><span class="avatar">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="co">${esc(a.company)} ${exChip(a)}</div><div class="sub">${esc(a.role)} · ${esc(a.city)}</div></div>${stageChip(a)}</div>
+  return `<div class="cards">${[...S.apps].sort((a,b)=>(b.appliedAt||"").localeCompare(a.appliedAt||"")).map(a=>{const d=daysSince(a.progressAt||a.appliedAt);const rc=rvCount(a);
+  return `<article class="acard ${isStale(a)?"stale":""}" onclick="if(!event.target.closest('button'))editApp('${a.id}')" tabindex="0">
+    <div class="ahead"><span class="avatar">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="co">${esc(a.company.replace(/（.*?）/,""))}</div><div class="sub one">${esc(a.role)}</div></div>${stageChip(a)}</div>
     ${progBar(a)}
-    <div class="row sub"><span>${esc(a.channel)}</span><span>·</span><span class="mono">${esc(a.appliedAt)} 投递</span>${staleChip(a)}</div>
-    ${a.nextStep?`<div class="nextbox"><span class="icon" style="width:26px;height:26px">${ICON.clock}</span><span style="min-width:0">${nextHTML(a)}</span></div>`:""}
-    ${a.notes?`<div class="sub">${esc(a.notes)}</div>`:""}
-    <div class="acts"><button class="btn sm" onclick="editApp('${a.id}')">编辑</button><button class="btn sm" onclick="showCoReviews('${a.id}')">复盘 ${rvCount(a)}</button></div></article>`).join("")}</div>`;
+    ${a.nextStep&&!isClosed(a)||a.stage==="Offer"&&a.nextStep?`<div class="nextline"><span class="nl-ic">${ICON.clock}</span><span class="one">${esc(a.nextStep)}</span>${a.nextAt?`<span class="nl-t">${shortDT(a.nextAt)}</span>`:""}</div>`:""}
+    <div class="afoot"><span>${esc(a.city)}</span><span>${esc(a.channel)}</span>${isStale(a)?`<span class="chip stale">${d} 天无进展</span>`:""}<span class="spacer"></span>${rc?`<button class="btn sm ghost" onclick="showCoReviews('${a.id}')">复盘 ${rc}</button>`:`<button class="btn sm ghost" onclick="editReview(null,'${a.id}')">写复盘</button>`}</div></article>`}).join("")}</div>`;
 }
-
 function boardHTML(){
   return `<div class="board">${STAGES.map(st=>{const list=S.apps.filter(a=>a.stage===st);
     return `<div class="col" data-stage="${st}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="dropCard(event,'${st}')"><h3><span>${st==="Offer"?"Offer":st}</span><span>${list.length}</span></h3>${list.map(cardHTML).join("")}</div>`}).join("")}</div>
