@@ -129,13 +129,14 @@ textarea{min-height:60px;resize:vertical}
     <button data-t="reviews">面试复盘</button>
     <button data-t="offers">Offer 对比</button>
   </nav>
-  <span class="sync" id="sync">连接中…</span>
+  <span class="sync" id="sync">连接中…</span><button class="btn sm" id="logoutBtn" onclick="logout()" hidden>退出</button>
 </div></div></header>
 
 <main class="wrap" id="main"></main>
 <div id="modalRoot"></div>
 <div class="toast" id="toast" hidden></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const STAGES=["已投递","简历评估","笔试","一面","二面","HR 面","Offer","未通过"];
 const INTERVIEW_STAGES=["一面","二面","HR 面"];
@@ -152,42 +153,69 @@ const daysSince=d=>d?Math.floor((new Date(todayStr())-new Date(d.slice(0,10)))/8
 const fmtDT=s=>s?s.replace("T"," "):"";
 const toast=m=>{const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(t._h);t._h=setTimeout(()=>t.hidden=true,1800)};
 
-/* ---------- storage: db capability, localStorage fallback ---------- */
-let DB=null;const COLS=["apps","reviews","offers"];
-function localLoad(){COLS.forEach(c=>{try{S[c]=JSON.parse(localStorage.getItem("jd."+c)||"[]")}catch(e){S[c]=[]}})}
-function localSave(c){try{localStorage.setItem("jd."+c,JSON.stringify(S[c]))}catch(e){}}
+/* ---------- storage: Supabase (table items: one row per record) ---------- */
+const SB_URL="https://ezflzkzmdmrxaruflknc.supabase.co";
+const SB_KEY="sb_publishable_GbGmniMN7jbSr7AghMXSaA_AwSr120s";
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+const COLS=["apps","reviews","offers"];let USER=null;
+const setSync=t=>{$("#sync").textContent=t};
 async function save(c,obj){
   obj.updatedAt=new Date().toISOString();
-  if(DB){try{const{id,...body}=obj;await DB.collection(c).doc(id).set(body);toast("已保存")}catch(e){toast("保存失败："+(e.message||e.code))}}
-  else{const i=S[c].findIndex(x=>x.id===obj.id);i>=0?S[c][i]=obj:S[c].push(obj);localSave(c);render();toast("已保存到本机浏览器")}
+  const i=S[c].findIndex(x=>x.id===obj.id);i>=0?S[c][i]=obj:S[c].push(obj);render();
+  const{error}=await sb.from("items").upsert({id:obj.id,kind:c,data:obj,user_id:USER.id});
+  toast(error?"保存失败："+error.message:"已保存");
 }
 async function remove(c,id){
-  if(DB){try{await DB.collection(c).doc(id).delete();toast("已删除")}catch(e){toast("删除失败")}}
-  else{S[c]=S[c].filter(x=>x.id!==id);localSave(c);render();toast("已删除")}
+  S[c]=S[c].filter(x=>x.id!==id);render();
+  const{error}=await sb.from("items").delete().eq("id",id);
+  toast(error?"删除失败："+error.message:"已删除");
 }
 const newId=p=>p+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-
-(async()=>{
-  render();
-  for(let i=0;i<30&&!window.claude?.use;i++)await new Promise(r=>setTimeout(r,100));
-  let db=null;try{db=await window.claude?.use?.("db")}catch(e){db=null}
-  if(!db){localLoad();$("#sync").textContent="未连接云端，数据存于本机浏览器";render();return}
-  DB=db;let pending=COLS.length;
-  const timer=setTimeout(()=>{$("#sync").textContent="云端暂时连不上，显示的可能不是最新"},10000);
-  COLS.forEach(c=>{
-    let first=true;
-    db.collection(c).onSnapshot(snap=>{
-      S[c]=snap.docs.map(d=>({id:d.id,...d.data()}));
-      if(first&&!snap.metadata.fromCache){first=false;if(--pending===0){clearTimeout(timer);$("#sync").textContent="已同步 · 自动保存"}}
-      render();
-    },err=>{clearTimeout(timer);$("#sync").textContent="云端不可用（"+err.code+"）"});
-  });
-})();
+async function loadAll(){
+  setSync("同步中…");
+  const{data,error}=await sb.from("items").select("id,kind,data");
+  if(error){setSync("读取失败："+error.message);return}
+  COLS.forEach(c=>S[c]=data.filter(r=>r.kind===c).map(r=>({...r.data,id:r.id})));
+  if(!data.some(r=>r.kind==="meta"))await seedExample();
+  setSync("已同步 · "+(USER.email||""));render();
+}
+async function seedExample(){
+  const ex=[
+    {kind:"apps",data:{id:"app_example",example:true,company:"示例科技（虚构）",role:"AI 产品经理",city:"新加坡",channel:"内推",appliedAt:"2026-10-20",stage:"一面",nextStep:"一面：产品 sense + 项目深挖",nextAt:"2026-11-10T14:00",notes:"内推人：前同事；JD 侧重 Agent 落地",events:[{type:"笔试",at:"2026-10-24T10:00",dur:60},{type:"一面",at:"2026-11-10T14:00",dur:60}],history:["已投递","简历评估","笔试"],progressAt:"2026-10-27"}},
+    {kind:"reviews",data:{id:"rv_example",example:true,appId:"app_example",round:"笔试",date:"2026-10-24",questions:[{type:"案例题",q:"为一款出海 AI 助手设计首月留存提升方案",answer:"先拆新用户激活路径，找到首个价值时刻，再设计引导和召回",weak:"没给出具体指标口径和实验设计"},{type:"行为题",q:"讲一次推动跨团队项目落地的经历",answer:"用 TikTok 项目举例，讲对齐目标和节奏",weak:"结果数据说得不够具体"}],improve:"案例题先说清目标指标和衡量方式；行为题准备 2 个带数字的 STAR 故事"}},
+    {kind:"offers",data:{id:"of_example",example:true,company:"示例科技（虚构）",role:"AI 产品经理",city:"新加坡",currency:"SGD",monthly:"9000",months:"13",fundPct:"17",extraCash:"5000",intensity:3,growth:4,fit:4,perks:"每年 18 天年假，医疗保险，远程 2 天/周"}},
+    {kind:"meta",data:{id:"meta_seeded"}}];
+  const rows=ex.map(e=>({id:e.data.id,kind:e.kind,data:e.data,user_id:USER.id}));
+  const{error}=await sb.from("items").upsert(rows);
+  if(!error)ex.forEach(e=>{if(S[e.kind])S[e.kind].push(e.data)});
+}
+function showLogin(msg){
+  $("#main").innerHTML=`<section class="rv" style="max-width:380px;margin:48px auto"><h2 style="margin:0;font-size:17px">登录求职工作台</h2>
+  <label class="f">邮箱<input id="lg_email" type="email" autocomplete="email"></label>
+  <label class="f">密码（至少 6 位）<input id="lg_pw" type="password" autocomplete="current-password"></label>
+  <div class="row"><button class="btn pri" onclick="doLogin(false)">登录</button><button class="btn" onclick="doLogin(true)">首次使用：注册</button></div>
+  <div class="sub" id="lg_msg">${esc(msg||"")}</div></section>`;
+  setSync("未登录");
+}
+window.doLogin=async signup=>{
+  const email=$("#lg_email").value.trim(),password=$("#lg_pw").value;
+  const r=signup?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email,password});
+  if(r.error){$("#lg_msg").textContent=r.error.message;return}
+  if(signup&&!r.data.session){$("#lg_msg").textContent="已发送确认邮件，点邮件里的链接后回来登录。"}
+};
+window.logout=async()=>{await sb.auth.signOut()};
+sb.auth.onAuthStateChange((ev,session)=>{
+  const u=session?.user||null;
+  if(u&&(!USER||USER.id!==u.id)){USER=u;$("#logoutBtn").hidden=false;render();loadAll()}
+  else if(!u){USER=null;COLS.forEach(c=>S[c]=[]);$("#logoutBtn").hidden=true;showLogin()}
+});
+window.addEventListener("focus",()=>{if(USER&&!document.querySelector(".mask"))loadAll()});
 
 /* ---------- tabs ---------- */
 $("#tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.tab=b.dataset.t;try{history.replaceState(null,"","#"+S.tab)}catch(_){}render()});
 
 function render(){
+  if(!USER)return;
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===S.tab));
   $("#main").innerHTML=S.tab==="apps"?renderApps():S.tab==="reviews"?renderReviews():renderOffers();
 }
