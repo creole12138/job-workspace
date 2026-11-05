@@ -16,18 +16,18 @@
   --ink:#121722;--on-ink:#ffffff;--lime:#a7ead2;--on-lime:#0f2a22;--sage:#d5e2ff;--sage-deep:#3f6df6;
   --accent:#121722;--accent-soft:#e6eeff;
   --warn:#b7791f;--warn-soft:#fbf0d9;--bad:#d4574b;--bad-soft:#fbe3df;--good:#1f9d77;--good-soft:#dcf5ec;
-  --night:#121722;--on-night:#eef2f6;--night-2:#2c3443;--r-lg:24px;--r-md:16px;--r-sm:12px;
+  --band:#e2e8f0;--night:#121722;--on-night:#eef2f6;--night-2:#2c3443;--r-lg:24px;--r-md:16px;--r-sm:12px;
   --sans:"Noto Sans SC",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
   --num:"Outfit","Noto Sans SC",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f131a;--surface:#171d27;--sunk:#202836;--fg:#e8edf5;--muted:#8c97a8;--line:#2a3342;
   --ink:#e8edf5;--on-ink:#121722;--lime:#6fd8b4;--on-lime:#0f2a22;--sage:#2a3a5e;--sage-deep:#7d9cff;
-  --accent:#e8edf5;--accent-soft:#1f2c49;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}}
+  --accent:#e8edf5;--accent-soft:#1f2c49;--band:#232b38;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f131a;--surface:#171d27;--sunk:#202836;--fg:#e8edf5;--muted:#8c97a8;--line:#2a3342;
   --ink:#e8edf5;--on-ink:#121722;--lime:#6fd8b4;--on-lime:#0f2a22;--sage:#2a3a5e;--sage-deep:#7d9cff;
-  --accent:#e8edf5;--accent-soft:#1f2c49;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}
+  --accent:#e8edf5;--accent-soft:#1f2c49;--band:#232b38;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
@@ -55,11 +55,17 @@ button,select,input,textarea{font:inherit;color:inherit}
 .seg button.on{background:var(--lime);color:var(--on-lime);font-weight:500}
 .spacer{flex:1}
 /* overview: left = KPIs + funnel ring, right = calendar */
-.ov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px;margin-top:6px;align-items:stretch}
+.ov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:12px;margin-top:12px;align-items:stretch}
+.ovl{display:flex}.ovl>.tile{flex:1}
 .ovr{display:flex;min-width:0}.ovr>.tile{flex:1}
 @media (max-width:960px){.ov{grid-template-columns:1fr}}
 .ovl{display:flex;flex-direction:column;gap:12px;min-width:0}
-.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:6px}
+.ftile{margin-top:12px}
+.fscroll{overflow-x:auto;margin:0 -6px}
+.fsvg{display:block;width:100%;min-width:640px;height:auto}
+.fhint{font-size:12px;color:var(--muted)}
+@media (max-width:640px){.fhint{display:none}}
 .tile{background:var(--surface);border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .tile.lime{background:var(--lime);color:var(--on-lime)}
 .tile.sage{background:var(--sage-deep);color:#fff}
@@ -125,7 +131,7 @@ button,select,input,textarea{font:inherit;color:inherit}
 .cal-head b{white-space:nowrap}
 @media (max-width:420px){.cal-head .chip{display:none}}
 .cal-head b{font-size:16px;font-weight:600}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:auto;grid-auto-rows:1fr;gap:4px;flex:1}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .cal .dow{font-size:11px;color:var(--muted);text-align:center;padding:2px 0}
 .cc{border:0;background:none;color:inherit;border-radius:var(--r-sm);min-height:70px;padding:5px;display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;cursor:pointer;min-width:0;font:inherit}
 .cc:hover{background:var(--sunk)}
@@ -147,7 +153,10 @@ button,select,input,textarea{font:inherit;color:inherit}
 .calleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
 .calleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .lg-int{background:var(--sage-deep)}.lg-test{background:var(--lime)}.lg-clash{background:var(--bad)}
-.stalebox{display:flex;gap:8px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;min-width:0}
+.todo{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);cursor:pointer;font-size:13px;min-width:0}
+.row+.todo{border-top:0}
+.avatar.sm{width:28px;height:28px;font-size:12px}
+.stalebox{margin-top:auto;display:flex;gap:8px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:var(--r-sm);padding:8px 10px;font-size:13px;min-width:0}
 .stalebox .nl-ic{background:transparent}
 .mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
 .tile>.row+.mrow{border-top:0}
@@ -343,14 +352,22 @@ function donut(parts,size,center,sub){ // parts:[{v,c}]
 const avatarOf=s=>esc((s||"?").trim().charAt(0));
 const emptyBox=t=>`<div class="empty">${ICON.folder}<div>${t}</div></div>`;
 
-const FUNNEL_COLORS=["#c9d8ff","#9db8ff","#6f95fb","#3f6df6","#8fe0c4","#34b98f","var(--ink)"];
-function funnelRing(steps,n){
-  const W=240,c=W/2,sw=8,gap=3;let svg="";
-  steps.forEach(([st,v],i)=>{const r=c-6-i*(sw+gap);const C=2*Math.PI*r;const f=n?v/n:0;
-    svg+=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--sunk)" stroke-width="${sw}"/>`;
-    if(f>0)svg+=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${FUNNEL_COLORS[i]}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${Math.max(f*C-0.01,0.01)} ${C}" transform="rotate(-90 ${c} ${c})"><title>${st} ${v}</title></circle>`;});
-  const off=steps[6][1];
-  return `<svg viewBox="0 0 ${W} ${W}" class="fring" role="img" aria-label="阶段转化圆环漏斗">${svg}<text x="${c}" y="${c+2}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="26" font-weight="600" fill="currentColor">${n?Math.round(off/n*100):0}%</text><text x="${c}" y="${c+20}" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">投递→Offer</text></svg>`;
+function funnelSVG(steps,n){
+  const W=1000,H=262,cy=130,N=steps.length,x0=80,x1=W-80,R=58,rmin=24;
+  const xs=steps.map((_,i)=>x0+i*(x1-x0)/(N-1));
+  const rs=steps.map(([,v])=>n?Math.max(rmin,R*Math.sqrt(v/n)):rmin);
+  let band="",rings="",txt="";
+  for(let i=0;i<N-1;i++)band+=`<polygon points="${xs[i]},${cy-rs[i]*.72} ${xs[i+1]},${cy-rs[i+1]*.72} ${xs[i+1]},${cy+rs[i+1]*.72} ${xs[i]},${cy+rs[i]*.72}" fill="var(--band)"/>`;
+  steps.forEach(([st,v],i)=>{const r=rs[i],sw=Math.max(7,r*.3),rr=r-sw/2,C=2*Math.PI*rr,f=n?v/n:0;
+    rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${r}" fill="var(--surface)"/><circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="var(--sunk)" stroke-width="${sw}"/>`;
+    if(f>0)rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="${i===N-1?"var(--good)":"var(--sage-deep)"}" stroke-width="${sw}" stroke-dasharray="${f>=1?C:f*C} ${C}" transform="rotate(-90 ${xs[i]} ${cy})"/>`;
+    const pct=n?(v/n*100):0;
+    txt+=`<text x="${xs[i]}" y="${cy+4}" text-anchor="middle" font-size="${r>40?17:13}" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${pct>=99.95?"100":pct.toFixed(pct<10&&pct>0?1:0)}%</text>`;
+    txt+=`<text x="${xs[i]}" y="${cy-R-44}" text-anchor="middle" font-size="15" fill="var(--muted)">${st}</text><text x="${xs[i]}" y="${cy-R-14}" text-anchor="middle" font-size="26" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${v}</text>`;
+    if(i){const prev=steps[i-1][1],drop=prev-v,sc=prev?Math.round(v/prev*100):0;
+      txt+=`<text x="${xs[i]}" y="${cy+R+30}" text-anchor="middle" font-size="15" font-family="Outfit,sans-serif" font-weight="600" fill="var(--bad)">▼${drop}</text><text x="${xs[i]}" y="${cy+R+52}" text-anchor="middle" font-size="13" font-family="Outfit,sans-serif" fill="var(--muted)">↪ ${prev?sc+"%":"–"}</text>`;}
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="fsvg" role="img" aria-label="招聘阶段漏斗">${band}${rings}${txt}</svg>`;
 }
 function statsHTML(){
   const A=S.apps,n=A.length;
@@ -359,24 +376,22 @@ function statsHTML(){
   const offer=A.filter(a=>a.stage==="Offer").length;
   const pct=(a,b)=>b?Math.round(a/b*100)+"%":"–";
   const steps=STAGES.slice(0,7).map(st=>[st,cnt(st)]);
-  const leg=steps.map(([st,v],i)=>`<div class="fl"><i style="background:${FUNNEL_COLORS[i]}"></i><span class="nm">${st}</span><b>${v}</b><span class="cv">${i?pct(v,steps[i-1][1]):""}</span></div>`).join("");
-  return `<section class="ov"><div class="ovl">
-    <div class="kpis">
+  return `<section class="kpis">
       <div class="tile"><div class="row"><span class="icon soft">${ICON.send}</span><span class="lbl">投递</span></div><div class="big">${n}</div></div>
       <div class="tile sage"><div class="row"><span class="icon">${ICON.chat}</span><span class="lbl">进入面试</span></div><div class="big">${inter}<small>${pct(inter,n)}</small></div></div>
       <div class="tile lime"><div class="row"><span class="icon">${ICON.star}</span><span class="lbl">Offer</span></div><div class="big">${offer}<small>${pct(offer,n)}</small></div></div>
-    </div>
-    <div class="tile"><div class="row"><span class="lbl">阶段转化</span><span class="spacer"></span><span class="sub">外圈到内圈依次为各阶段，右侧为较上一阶段的转化率</span></div>
-      <div class="funnel">${funnelRing(steps,n)}<div class="flegend">${leg}</div></div></div>
-    ${todoCard()}
-  </div><div class="ovr">${calCard()}</div></section>`;
+    </section>
+    <section class="tile ftile"><div class="row"><span class="lbl">阶段转化</span><span class="spacer"></span><span class="fhint">圈内为累计转化率 · <b style="color:var(--bad)">▼</b> 流失人数 · ↪ 较上一阶段</span></div><div class="fscroll">${funnelSVG(steps,n)}</div></section>
+    <section class="ov"><div class="ovl">${todoCard()}</div><div class="ovr">${calCard()}</div></section>`;
 }
 function todoCard(){
   const ev=allEvents();const now=new Date();
   const list=(S.calSel?ev.filter(e=>e.at.slice(0,10)===S.calSel):ev.filter(e=>e.end>=now)).sort((a,b)=>a.start-b.start);
   const stale=S.apps.filter(isStale);
+  const todos=S.apps.filter(a=>a.nextStep&&a.stage!=="未通过").sort((a,b)=>(a.nextAt||"9").localeCompare(b.nextAt||"9"));
   return `<div class="tile"><div class="row"><span class="lbl">${S.calSel?`${+S.calSel.slice(5,7)} 月 ${+S.calSel.slice(8)} 日`:"接下来的安排"}</span><span class="chip">${list.length}</span><span class="spacer"></span>${S.calSel?`<button class="btn sm ghost" onclick="S.calSel=null;render()">看全部</button>`:""}</div>
-  ${list.length?list.slice(0,4).map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b class="one" style="display:block">${esc(e.app.company)}</b><div class="sub one">${esc(e.type)}${e.clash?" · 时间冲突":""}</div></div></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。点日历上的日期查看。":"暂无笔试 / 面试。"}</span>`}
+  ${list.length?list.slice(0,6).map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b class="one" style="display:block">${esc(e.app.company)}</b><div class="sub one">${esc(e.type)}${e.clash?" · 时间冲突":""}</div></div></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。点日历上的日期查看。":"暂无笔试 / 面试。"}</span>`}
+  ${todos.length?`<div class="row" style="margin-top:6px"><span class="lbl">待办的下一步</span><span class="chip">${todos.length}</span></div>${todos.slice(0,5).map(a=>`<div class="todo" onclick="editApp('${a.id}')"><span class="avatar sm">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="one">${esc(a.nextStep)}</div><div class="sub one">${esc(a.company.replace(/（.*?）/,""))}</div></div>${a.nextAt?`<span class="nl-t">${shortDT(a.nextAt)}</span>`:""}</div>`).join("")}`:""}
   ${stale.length?`<div class="stalebox"><span class="nl-ic">${ICON.bell}</span><span class="one"><b>${stale.length}</b> 条超过 ${STALE_DAYS} 天没进展：${stale.map(a=>esc(a.company.replace(/（.*?）/,""))).join("、")}</span></div>`:""}</div>`;
 }
 function calCard(){
