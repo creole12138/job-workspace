@@ -12,22 +12,22 @@
 <style>
 /* Layout: sage canvas, white rounded cards in a bento grid; black pills for primary actions, lime for "now/active". */
 :root{
-  --bg:#e9ece6;--surface:#ffffff;--sunk:#f2f4ef;--fg:#16181a;--muted:#7b817a;--line:#e1e5dd;
-  --ink:#16181a;--on-ink:#ffffff;--lime:#ddf26b;--on-lime:#16181a;--sage:#a9b4a6;--sage-deep:#7d8a7a;
-  --accent:#16181a;--accent-soft:#eef7c4;
-  --warn:#b7791f;--warn-soft:#fbf0d9;--bad:#cc5b4f;--bad-soft:#f8e1dd;--good:#4a9a63;--good-soft:#dff0e3;
-  --night:#1f2321;--on-night:#eef0ec;--night-2:#3a413c;--r-lg:26px;--r-md:18px;--r-sm:12px;
+  --bg:#eef2f6;--surface:#ffffff;--sunk:#f1f4f8;--fg:#121722;--muted:#6f7a8a;--line:#e1e7ef;
+  --ink:#121722;--on-ink:#ffffff;--lime:#a7ead2;--on-lime:#0f2a22;--sage:#d5e2ff;--sage-deep:#3f6df6;
+  --accent:#121722;--accent-soft:#e6eeff;
+  --warn:#b7791f;--warn-soft:#fbf0d9;--bad:#d4574b;--bad-soft:#fbe3df;--good:#1f9d77;--good-soft:#dcf5ec;
+  --night:#121722;--on-night:#eef2f6;--night-2:#2c3443;--r-lg:24px;--r-md:16px;--r-sm:12px;
   --sans:"Noto Sans SC",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
   --num:"Outfit","Noto Sans SC",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#111312;--surface:#1c1f1d;--sunk:#252926;--fg:#eef0ec;--muted:#959c94;--line:#2c312d;
-  --ink:#eef0ec;--on-ink:#16181a;--lime:#d4ea5c;--on-lime:#16181a;--sage:#5d6a5b;--sage-deep:#86937f;
-  --accent:#eef0ec;--accent-soft:#33391f;--night:#262b28;--on-night:#eef0ec;--night-2:#353b37;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#7fcf95;--good-soft:#1f3326;color-scheme:dark}}
+  --bg:#0f131a;--surface:#171d27;--sunk:#202836;--fg:#e8edf5;--muted:#8c97a8;--line:#2a3342;
+  --ink:#e8edf5;--on-ink:#121722;--lime:#6fd8b4;--on-lime:#0f2a22;--sage:#2a3a5e;--sage-deep:#7d9cff;
+  --accent:#e8edf5;--accent-soft:#1f2c49;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#111312;--surface:#1c1f1d;--sunk:#252926;--fg:#eef0ec;--muted:#959c94;--line:#2c312d;
-  --ink:#eef0ec;--on-ink:#16181a;--lime:#d4ea5c;--on-lime:#16181a;--sage:#5d6a5b;--sage-deep:#86937f;
-  --accent:#eef0ec;--accent-soft:#33391f;--night:#262b28;--on-night:#eef0ec;--night-2:#353b37;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#7fcf95;--good-soft:#1f3326;color-scheme:dark}
+  --bg:#0f131a;--surface:#171d27;--sunk:#202836;--fg:#e8edf5;--muted:#8c97a8;--line:#2a3342;
+  --ink:#e8edf5;--on-ink:#121722;--lime:#6fd8b4;--on-lime:#0f2a22;--sage:#2a3a5e;--sage-deep:#7d9cff;
+  --accent:#e8edf5;--accent-soft:#1f2c49;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
@@ -54,48 +54,29 @@ button,select,input,textarea{font:inherit;color:inherit}
 .seg button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--muted)}
 .seg button.on{background:var(--lime);color:var(--on-lime);font-weight:500}
 .spacer{flex:1}
-/* bento overview */
-.bento{display:grid;grid-auto-flow:dense;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;margin-top:6px}
+/* overview: left = KPIs + funnel ring, right = calendar */
+.ov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;margin-top:6px;align-items:start}
+@media (max-width:960px){.ov{grid-template-columns:1fr}}
+.ovl{display:flex;flex-direction:column;gap:12px;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .tile{background:var(--surface);border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .tile.lime{background:var(--lime);color:var(--on-lime)}
-.tile.ink{background:var(--ink);color:var(--on-ink)}
-.tile.sage{background:var(--sage);color:var(--on-lime)}
-.t-kpi{grid-column:span 2}
-.t-funnel{grid-column:span 6;grid-row:span 2}
-.t-donut{grid-column:span 6}
-.t-week{grid-column:1/-1}
-@media (max-width:900px){.t-kpi{grid-column:span 4}.t-funnel,.t-donut{grid-column:1/-1;grid-row:auto}}
-.lbl{font-size:12px;opacity:.7;letter-spacing:.02em}
-.big{font-family:var(--num);font-size:40px;line-height:1;font-weight:500;font-variant-numeric:tabular-nums}
-.big small{font-size:15px;opacity:.6;margin-left:4px}
-.icon{width:34px;height:34px;border-radius:999px;background:var(--surface);color:var(--fg);display:grid;place-items:center;flex:none}
-.tile.ink .icon{background:var(--lime);color:var(--on-lime)}
+.tile.sage{background:var(--sage-deep);color:#fff}
+.tile.sage .icon{background:rgba(255,255,255,.22);color:#fff}
+.lbl{font-size:12px;opacity:.75;letter-spacing:.02em}
+.big{font-family:var(--num);font-size:38px;line-height:1;font-weight:500;font-variant-numeric:tabular-nums}
+.big small{font-size:14px;opacity:.7;margin-left:4px}
+@media (max-width:420px){.kpis .tile{padding:14px}.big{font-size:30px}.kpis .row .lbl{display:block;width:100%}}
+.icon{width:32px;height:32px;border-radius:999px;background:var(--surface);color:var(--fg);display:grid;place-items:center;flex:none}
+.icon.soft{background:var(--accent-soft);color:var(--sage-deep)}
 .icon svg{width:16px;height:16px}
-.donut-wrap{display:flex;align-items:center;gap:14px}
-.donut-wrap svg{width:110px;height:110px;flex:none}
-.legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;font-size:12px;min-width:0;flex:1}
-.legend .li{display:flex;flex-direction:column;gap:3px;min-width:0}
-.legend .li span{color:var(--muted)}
-.legend .li b{font-family:var(--num);font-size:17px;font-weight:500}
-.legend .mini{height:4px;border-radius:999px;background:var(--sunk);overflow:hidden}
-.legend .mini i{display:block;height:100%;border-radius:999px}
-.vbars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;flex:1;min-height:170px}
-.vbar{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;min-width:0}
-.vbar .track{flex:1;width:100%;max-width:44px;background:var(--sunk);border-radius:14px;position:relative;overflow:hidden;min-height:120px}
-.vbar .fill{position:absolute;left:0;right:0;bottom:0;background:var(--ink);border-radius:14px;min-height:6px}
-.vbar.last .fill{background:var(--lime)}
-.vbar .val{font-family:var(--num);font-weight:500;font-size:15px}
-.vbar .pct{font-size:11px;color:var(--muted);font-family:var(--num)}
-.vbar .nm{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
-.day{background:var(--sunk);border-radius:999px;padding:10px 0 12px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
-.day b{font-family:var(--num);font-size:18px;font-weight:500}
-.day span{font-size:11px;color:var(--muted)}
-.day.today{background:var(--lime);color:var(--on-lime)}
-.day.today span{color:var(--on-lime);opacity:.7}
-.dots{display:flex;gap:3px;height:6px}
-.dots i{width:6px;height:6px;border-radius:999px;background:var(--ink)}
-.dots i.clash{background:var(--bad)}
+.funnel{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.fring{width:230px;height:230px;max-width:100%;flex:none;color:var(--fg)}
+.flegend{display:flex;flex-direction:column;gap:7px;flex:1;min-width:180px}
+.fl{display:grid;grid-template-columns:10px minmax(0,1fr) 28px 44px;gap:8px;align-items:center;font-size:13px}
+.fl i{width:10px;height:10px;border-radius:999px}
+.fl b{font-family:var(--num);font-weight:500;text-align:right}
+.fl .cv{color:var(--muted);font-family:var(--num);font-size:12px;text-align:right}
 /* alerts */
 .alert{display:flex;gap:10px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:var(--r-md);padding:10px 14px;font-size:13px;margin-top:12px}
 .alert.badc{background:var(--bad-soft);color:var(--bad)}
@@ -129,31 +110,37 @@ button,select,input,textarea{font:inherit;color:inherit}
 .card{background:var(--surface);border-radius:var(--r-md);padding:12px;cursor:grab;display:flex;flex-direction:column;gap:8px}
 .card.stale{box-shadow:inset 0 0 0 2px var(--warn)}
 .card .next{font-size:12px}
-/* calendar */
-.calgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px;align-items:start}
-@media (max-width:820px){.calgrid{grid-template-columns:1fr}}
-.calbox{background:var(--night);color:var(--on-night);border-radius:var(--r-lg);padding:20px}
-.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.cal-head b{font-size:16px;font-weight:500;flex:1}
-.calbox .btn{background:var(--night-2);border-color:transparent;color:var(--on-night)}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px 4px;justify-items:center}
-.cal .dow{font-size:11px;opacity:.55;padding:2px 0 6px}
-.dc{width:38px;height:38px;border-radius:999px;border:0;background:none;color:inherit;font-family:var(--num);font-size:13px;display:grid;place-items:center;cursor:pointer;position:relative;padding:0}
-.dc.out{opacity:.3}
-.dc.today{box-shadow:inset 0 0 0 1.5px var(--on-night)}
-.dc.past{background:var(--night-2)}
-.dc.up{background:var(--lime);color:#16181a;font-weight:600}
-.dc.clash{background:var(--bad);color:#fff;font-weight:600}
-.dc.sel{outline:2px solid var(--lime);outline-offset:2px}
-.dc .n{position:absolute;top:-3px;right:-3px;background:var(--on-night);color:var(--night);border-radius:999px;font-size:9px;min-width:14px;height:14px;line-height:14px;padding:0 3px}
-@media (max-width:420px){.dc{width:32px;height:32px;font-size:12px}}
-.calleg{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:11px;opacity:.75}
-.calleg i{display:inline-block;width:8px;height:8px;border-radius:999px;margin-right:5px;vertical-align:middle}
-.meet{background:var(--surface);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;gap:4px}
-.meet h3{margin:0 0 8px;font-size:16px;font-weight:500;display:flex;gap:8px;align-items:center}
-.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
-.mrow:first-of-type{border-top:0}
-.mrow .t{font-family:var(--num);font-size:24px;font-weight:500;line-height:1}
+/* calendar card */
+.cal-head{display:flex;align-items:center;gap:6px}
+.cal-head b{white-space:nowrap}
+@media (max-width:420px){.cal-head .chip{display:none}}
+.cal-head b{font-size:16px;font-weight:600}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .dow{font-size:11px;color:var(--muted);text-align:center;padding:2px 0}
+.cc{border:0;background:none;color:inherit;border-radius:var(--r-sm);min-height:84px;padding:5px;display:flex;flex-direction:column;align-items:stretch;gap:3px;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.cc:hover{background:var(--sunk)}
+.cc.out{opacity:.35}
+.cc .d{font-family:var(--num);font-size:12px;width:22px;height:22px;display:grid;place-items:center;border-radius:999px}
+.cc.today .d{background:var(--ink);color:var(--on-ink)}
+.cc.has{background:var(--accent-soft)}
+.cc.has.clash{background:var(--bad-soft)}
+.cc.sel{box-shadow:inset 0 0 0 2px var(--sage-deep)}
+.evc{display:block;font-size:10.5px;line-height:1.3;padding:3px 6px;border-radius:7px;background:var(--sage-deep);color:#fff;min-width:0}
+.evc .txt{display:flex;flex-direction:column}
+.evc .txt>*{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evc b{font-weight:600;font-family:var(--num)}
+.evc.test{background:var(--lime);color:var(--on-lime)}
+.evc.clash{background:var(--bad);color:#fff}
+.cc.past .evc{opacity:.55}
+.more{font-size:10px;color:var(--muted);padding-left:4px}
+@media (max-width:560px){.cc{min-height:48px;padding:3px;align-items:center}.evc{width:100%;height:5px;padding:0}.evc .txt{display:none}.cal{gap:2px}}
+.calleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.calleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.lg-int{background:var(--sage-deep)}.lg-test{background:var(--lime)}.lg-clash{background:var(--bad)}
+.meet{background:var(--sunk);border-radius:var(--r-md);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.meet .row+.mrow{border-top:0}
+.mrow .t{font-family:var(--num);font-size:22px;font-weight:500;line-height:1}
 .mrow .t small{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:4px}
 .mrow.clash .t{color:var(--bad)}
 .mono{font-family:var(--num);font-variant-numeric:tabular-nums}
@@ -228,7 +215,7 @@ const EVTYPES=["笔试","一面","二面","HR 面","其他"];
 const QTYPES=["专业题","行为题","案例题","背景题"];
 const STALE_DAYS=7;
 const S={tab:location.hash==="#reviews"?"reviews":location.hash==="#offers"?"offers":"apps",view:"list",calMonth:null,apps:[],reviews:[],offers:[],rvCo:"",rvType:"",editable:true};
-try{S.view=localStorage.getItem("jd.view")||"list"}catch(e){}
+try{S.view=localStorage.getItem("jd.view")||"list";if(S.view==="cal")S.view="list"}catch(e){}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const todayStr=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
@@ -336,7 +323,7 @@ const ICON={
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   bell:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>',
   folder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>'};
-const STAGE_COLOR={"已投递":"var(--sage)","简历评估":"var(--sage-deep)","笔试":"#c9d6c3","一面":"var(--lime)","二面":"#b9cf4a","HR 面":"#8fa83a","Offer":"var(--good)","未通过":"var(--bad)"};
+const STAGE_COLOR={};
 function donut(parts,size,center,sub){ // parts:[{v,c}]
   const r=40,C=2*Math.PI*r,tot=parts.reduce((s,p)=>s+p.v,0)||1;let off=0;
   const segs=parts.filter(p=>p.v>0).map(p=>{const len=p.v/tot*C;const g=parts.filter(x=>x.v>0).length>1?2:0;const s=`<circle cx="50" cy="50" r="${r}" fill="none" stroke="${p.c}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${Math.max(len-g,0.01)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 50 50)"/>`;off+=len;return s}).join("");
@@ -345,6 +332,15 @@ function donut(parts,size,center,sub){ // parts:[{v,c}]
 const avatarOf=s=>esc((s||"?").trim().charAt(0));
 const emptyBox=t=>`<div class="empty">${ICON.folder}<div>${t}</div></div>`;
 
+const FUNNEL_COLORS=["#c9d8ff","#9db8ff","#6f95fb","#3f6df6","#8fe0c4","#34b98f","var(--ink)"];
+function funnelRing(steps,n){
+  const W=240,c=W/2,sw=8,gap=3;let svg="";
+  steps.forEach(([st,v],i)=>{const r=c-6-i*(sw+gap);const C=2*Math.PI*r;const f=n?v/n:0;
+    svg+=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--sunk)" stroke-width="${sw}"/>`;
+    if(f>0)svg+=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${FUNNEL_COLORS[i]}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${Math.max(f*C-0.01,0.01)} ${C}" transform="rotate(-90 ${c} ${c})"><title>${st} ${v}</title></circle>`;});
+  const off=steps[6][1];
+  return `<svg viewBox="0 0 ${W} ${W}" class="fring" role="img" aria-label="阶段转化圆环漏斗">${svg}<text x="${c}" y="${c+2}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="26" font-weight="600" fill="currentColor">${n?Math.round(off/n*100):0}%</text><text x="${c}" y="${c+20}" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">投递→Offer</text></svg>`;
+}
 function statsHTML(){
   const A=S.apps,n=A.length;
   const cnt=st=>A.filter(a=>reached(a,st)).length;
@@ -352,31 +348,42 @@ function statsHTML(){
   const offer=A.filter(a=>a.stage==="Offer").length;
   const pct=(a,b)=>b?Math.round(a/b*100)+"%":"–";
   const steps=STAGES.slice(0,7).map(st=>[st,cnt(st)]);
-  const funnel=steps.map(([st,c],i)=>`<div class="vbar ${i===6?"last":""}" title="${st}：${c}，较上一阶段 ${i?pct(c,steps[i-1][1]):"100%"}"><span class="val">${c}</span><div class="track"><div class="fill" style="height:${n?c/n*100:0}%"></div></div><span class="pct">${i?pct(c,steps[i-1][1]):"—"}</span><span class="nm">${st==="简历评估"?"简历":st}</span></div>`).join("");
-  const byStage=STAGES.map(st=>({st,v:A.filter(a=>a.stage===st).length,c:STAGE_COLOR[st]}));
-  // this week strip
-  const ev=allEvents();const base=new Date();base.setHours(0,0,0,0);base.setDate(base.getDate()-((base.getDay()+6)%7));
-  const wd=["一","二","三","四","五","六","日"];const t=todayStr();
-  const week=wd.map((w,i)=>{const d=new Date(base);d.setDate(base.getDate()+i);const ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-    const es=ev.filter(e=>e.at.slice(0,10)===ds);
-    return `<div class="day ${ds===t?"today":""}" title="${esc(es.map(e=>e.at.slice(11,16)+" "+e.app.company+" "+e.type).join("\n"))}"><b>${d.getDate()}</b><span>周${w}</span><div class="dots">${es.slice(0,4).map(e=>`<i class="${e.clash?"clash":""}"></i>`).join("")}</div></div>`}).join("");
-  const weekN=ev.filter(e=>{const d=new Date(e.at);return d>=base&&d<new Date(base.getTime()+7*864e5)}).length;
-  return `<section class="bento">
-    <div class="tile t-kpi"><div class="row"><span class="icon">${ICON.send}</span><span class="lbl">投递</span></div><div class="big">${n}</div></div>
-    <div class="tile t-kpi sage"><div class="row"><span class="icon">${ICON.chat}</span><span class="lbl">进入面试</span></div><div class="big">${inter}<small>${pct(inter,n)}</small></div></div>
-    <div class="tile t-kpi lime"><div class="row"><span class="icon">${ICON.star}</span><span class="lbl">Offer</span></div><div class="big">${offer}<small>${pct(offer,n)}</small></div></div>
-    <div class="tile t-funnel"><div class="row"><span class="lbl">阶段转化率</span><span class="spacer"></span><span class="sub">柱下方为较上一阶段的转化</span></div><div class="vbars">${funnel}</div></div>
-    <div class="tile t-donut"><span class="lbl">当前阶段分布</span><div class="donut-wrap">${donut(byStage.map(x=>({v:x.v,c:x.c})),120,n,"条投递")}<div class="legend">${byStage.filter(x=>x.v).map(x=>`<div class="li"><span>${x.st}</span><b>${Math.round(x.v/(n||1)*100)}%</b><div class="mini"><i style="width:${x.v/(n||1)*100}%;background:${x.c}"></i></div></div>`).join("")}</div></div></div>
-    <div class="tile t-week"><div class="row"><span class="lbl">本周笔试 / 面试</span><span class="spacer"></span><span class="chip">${weekN} 场</span></div><div class="week">${week}</div></div>
-  </section>`;
+  const leg=steps.map(([st,v],i)=>`<div class="fl"><i style="background:${FUNNEL_COLORS[i]}"></i><span class="nm">${st}</span><b>${v}</b><span class="cv">${i?pct(v,steps[i-1][1]):""}</span></div>`).join("");
+  return `<section class="ov"><div class="ovl">
+    <div class="kpis">
+      <div class="tile"><div class="row"><span class="icon soft">${ICON.send}</span><span class="lbl">投递</span></div><div class="big">${n}</div></div>
+      <div class="tile sage"><div class="row"><span class="icon">${ICON.chat}</span><span class="lbl">进入面试</span></div><div class="big">${inter}<small>${pct(inter,n)}</small></div></div>
+      <div class="tile lime"><div class="row"><span class="icon">${ICON.star}</span><span class="lbl">Offer</span></div><div class="big">${offer}<small>${pct(offer,n)}</small></div></div>
+    </div>
+    <div class="tile"><div class="row"><span class="lbl">阶段转化</span><span class="spacer"></span><span class="sub">外圈到内圈依次为各阶段，右侧为较上一阶段的转化率</span></div>
+      <div class="funnel">${funnelRing(steps,n)}<div class="flegend">${leg}</div></div></div>
+  </div><div class="ovr">${calCard()}</div></section>`;
+}
+function calCard(){
+  if(!S.calMonth){const d=new Date();S.calMonth=[d.getFullYear(),d.getMonth()]}
+  const[y,m]=S.calMonth;const first=new Date(y,m,1);const start=new Date(y,m,1-((first.getDay()+6)%7));
+  const ev=allEvents();const tStr=todayStr();const now=new Date();let cells="";
+  const dstr=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const ds=dstr(d);
+    const day=ev.filter(e=>e.at.slice(0,10)===ds).sort((a,b)=>a.start-b.start);
+    const cls=[d.getMonth()!==m?"out":"",ds===tStr?"today":"",day.length?(day.some(e=>e.clash)?"has clash":"has"):"",ds<tStr?"past":"",S.calSel===ds?"sel":""].join(" ");
+    cells+=`<button class="cc ${cls}" onclick="S.calSel=S.calSel==='${ds}'?null:'${ds}';render()" aria-label="${ds}，${day.length} 场"><span class="d">${d.getDate()}</span>${day.slice(0,2).map(e=>`<span class="evc ${e.clash?"clash":e.type==="笔试"?"test":""}" title="${esc(e.at.slice(11,16)+" "+e.app.company+" "+e.type)}"><span class="txt"><b>${e.at.slice(11,16)} ${esc(e.type)}</b><span>${esc(e.app.company.replace(/（.*?）/,""))}</span></span></span>`).join("")}${day.length>2?`<span class="more">+${day.length-2}</span>`:""}</button>`;
+    if(i===34&&new Date(start.getTime()+35*864e5).getMonth()!==m)break;}
+  const list=(S.calSel?ev.filter(e=>e.at.slice(0,10)===S.calSel):ev.filter(e=>e.end>=now)).sort((a,b)=>a.start-b.start);
+  const clashN=ev.filter(e=>e.end>=now&&e.clash).length;
+  return `<div class="tile calcard"><div class="cal-head"><b>${y} 年 ${m+1} 月</b>${clashN?`<span class="chip bad">${clashN} 场时间冲突</span>`:""}<span class="spacer"></span><button class="btn sm" onclick="calShift(-1)" aria-label="上个月">←</button><button class="btn sm" onclick="S.calMonth=null;S.calSel=null;render()">本月</button><button class="btn sm" onclick="calShift(1)" aria-label="下个月">→</button></div>
+  <div class="cal">${["一","二","三","四","五","六","日"].map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div>
+  <div class="calleg"><span><i class="lg-int"></i>面试</span><span><i class="lg-test"></i>笔试</span><span><i class="lg-clash"></i>时间冲突</span></div>
+  <div class="meet"><div class="row"><b>${S.calSel?`${+S.calSel.slice(5,7)} 月 ${+S.calSel.slice(8)} 日`:"接下来的安排"}</b><span class="chip">${list.length}</span><span class="spacer"></span>${S.calSel?`<button class="btn sm" onclick="S.calSel=null;render()">看全部</button>`:""}</div>
+  ${list.length?list.slice(0,6).map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b>${esc(e.app.company)}</b><div class="sub">${esc(e.app.role)}</div></div><span class="chip ${e.clash?"bad":e.type==="笔试"?"good":"stage"}">${esc(e.type)}</span></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。":"暂无。在投递里添加笔试 / 面试时间即可显示。"}</span>`}</div></div>`;
 }
 function renderApps(){
   const stale=S.apps.filter(isStale);
   let h=statsHTML();
   if(stale.length)h+=`<div class="alert"><span class="icon" style="background:transparent;color:inherit">${ICON.bell}</span><span><b>${stale.length}</b> 条投递超过 ${STALE_DAYS} 天没进展：${stale.map(a=>esc(a.company)).join("、")}</span></div>`;
-  h+=`<div class="toolbar"><div class="seg" id="viewSeg">${[["list","卡片"],["board","看板"],["cal","日历"]].map(([k,t])=>`<button data-v="${k}" class="${S.view===k?"on":""}">${t}</button>`).join("")}</div><span class="spacer"></span><button class="btn pri" onclick="editApp()">＋ 新增投递</button></div>`;
+  h+=`<div class="toolbar"><div class="seg" id="viewSeg">${[["list","卡片"],["board","看板"]].map(([k,t])=>`<button data-v="${k}" class="${S.view===k?"on":""}">${t}</button>`).join("")}</div><span class="spacer"></span><button class="btn pri" onclick="editApp()">＋ 新增投递</button></div>`;
   if(!S.apps.length)return h+emptyBox("还没有投递记录。点「新增投递」添加第一条。");
-  h+=S.view==="board"?boardHTML():S.view==="cal"?calHTML():listHTML();
+  h+=S.view==="board"?boardHTML():listHTML();
   return h;
 }
 function progBar(a){const steps=7;let i=a.stage==="未通过"?Math.max(...(a.history||[]).map(h=>STAGES.indexOf(h)),0):STAGES.indexOf(a.stage);
@@ -411,26 +418,6 @@ window.moveStage=(id,st)=>{const a=S.apps.find(x=>x.id===id);if(!a||a.stage===st
 /* calendar */
 function allEvents(){const ev=[];S.apps.forEach(a=>(a.events||[]).forEach((e,i)=>{if(e.at)ev.push({...e,app:a,key:a.id+i,start:new Date(e.at),end:new Date(new Date(e.at).getTime()+(+e.dur||60)*6e4)})}));
   ev.forEach(x=>x.clash=ev.some(y=>y!==x&&x.start<y.end&&y.start<x.end));return ev}
-function calHTML(){
-  if(!S.calMonth){const d=new Date();S.calMonth=[d.getFullYear(),d.getMonth()]}
-  const[y,m]=S.calMonth;const first=new Date(y,m,1);const start=new Date(y,m,1-((first.getDay()+6)%7));
-  const ev=allEvents();const tStr=todayStr();const now=new Date();let cells="";
-  const dstr=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-  for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const ds=dstr(d);
-    const day=ev.filter(e=>e.at.slice(0,10)===ds);
-    const cls=[d.getMonth()!==m?"out":"",ds===tStr?"today":"",day.some(e=>e.clash)?"clash":day.length?(ds<tStr?"past":"up"):"",S.calSel===ds?"sel":""].join(" ");
-    cells+=`<button class="dc ${cls}" onclick="S.calSel=S.calSel==='${ds}'?null:'${ds}';render()" title="${esc(day.map(e=>e.at.slice(11,16)+" "+e.app.company+" "+e.type).join("\n"))}">${d.getDate()}${day.length>1?`<span class="n">${day.length}</span>`:""}</button>`;
-    if(i===34&&new Date(start.getTime()+35*864e5).getMonth()!==m)break;}
-  const list=(S.calSel?ev.filter(e=>e.at.slice(0,10)===S.calSel):ev.filter(e=>e.end>=now)).sort((a,b)=>a.start-b.start);
-  const clashN=ev.filter(e=>e.end>=now&&e.clash).length;
-  const title=S.calSel?`${+S.calSel.slice(5,7)} 月 ${+S.calSel.slice(8)} 日`:"接下来的安排";
-  return `${clashN?`<div class="alert badc" style="margin:0 0 12px">有 ${clashN} 场笔试 / 面试时间重叠，日历上标红。</div>`:""}
-  <div class="calgrid"><div class="calbox"><div class="cal-head"><b>${y} 年 ${m+1} 月</b><button class="btn sm" onclick="calShift(-1)" aria-label="上个月">←</button><button class="btn sm" onclick="S.calMonth=null;S.calSel=null;render()">本月</button><button class="btn sm" onclick="calShift(1)" aria-label="下个月">→</button></div>
-  <div class="cal">${["一","二","三","四","五","六","日"].map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div>
-  <div class="calleg"><span><i style="box-shadow:inset 0 0 0 1.5px var(--on-night)"></i>今天</span><span><i style="background:var(--lime)"></i>待参加</span><span><i style="background:var(--night-2)"></i>已结束</span><span><i style="background:var(--bad)"></i>时间冲突</span></div></div>
-  <div class="meet"><h3>${title}<span class="chip">${list.length}</span>${S.calSel?`<span class="spacer"></span><button class="btn sm" onclick="S.calSel=null;render()">看全部</button>`:""}</h3>
-  ${list.length?list.map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b>${esc(e.app.company)}</b><div class="sub">${esc(e.app.role)}</div></div><span class="chip ${e.clash?"bad":"stage"}">${esc(e.type)}</span></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。":"暂无。在投递里添加笔试 / 面试时间即可显示。"}</span>`}</div></div>`;
-}
 window.calShift=d=>{S.calSel=null;let[y,m]=S.calMonth;m+=d;if(m<0){m=11;y--}if(m>11){m=0;y++}S.calMonth=[y,m];render()};
 
 /* app modal */
@@ -480,7 +467,7 @@ window.showCoReviews=id=>{const a=S.apps.find(x=>x.id===id);const ids=S.apps.fil
 function reviewHTML(r,compact){
   const a=S.apps.find(x=>x.id===r.appId);
   const qs=(r.questions||[]).filter(q=>!S.rvType||compact||q.type===S.rvType);
-  const all=r.questions||[];const QC={"专业题":"var(--ink)","行为题":"var(--sage-deep)","案例题":"var(--lime)","背景题":"var(--sage)"};
+  const all=r.questions||[];const QC={"专业题":"var(--ink)","行为题":"var(--sage-deep)","案例题":"var(--lime)","背景题":"#9db8ff"};
   const weakN=all.filter(q=>q.weak).length;
   return `<article class="rv"><div class="ahead"><span class="avatar">${avatarOf(a?.company)}</span><div style="flex:1;min-width:0"><b>${esc(a?.company||"已删除")}</b><div class="sub">${esc(a?.role||"")}</div></div><span class="chip stage">${esc(r.round)}</span></div>
   <div class="row sub"><span class="mono">${esc(r.date)}</span><span>· ${all.length} 题</span>${weakN?`<span class="chip bad">${weakN} 处没答好</span>`:`<span class="chip good">都答上了</span>`}</div>
