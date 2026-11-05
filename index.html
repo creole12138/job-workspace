@@ -334,20 +334,6 @@ sb.auth.onAuthStateChange((ev,session)=>{
 });
 window.addEventListener("focus",()=>{if(USER&&!RESETTING&&!document.querySelector(".mask"))loadAll()});
 
-/* ---------- import ---------- */
-window.openImport=()=>{openModal(`<h2>导入记录</h2><div class="sub">粘贴 Claude 为你整理好的导入代码（以 { 开头），点「导入」。已有相同编号的记录会被更新，不会重复。</div>
-  <label class="f">导入代码<textarea id="imp" style="min-height:220px;font-family:ui-monospace,Menlo,monospace;font-size:12px"></textarea></label>
-  <div class="sub" id="imp_msg"></div><div class="row"><span class="spacer"></span><button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="doImport()">导入</button></div>`)};
-window.doImport=async()=>{const msg=t=>{$("#imp_msg").textContent=t};let d;
-  try{d=JSON.parse($("#imp").value)}catch(e){msg("格式不对，请完整粘贴整段代码。");return}
-  const rows=[];COLS.forEach(c=>(d[c]||[]).forEach(o=>{if(o&&o.id)rows.push({c,o:{...o,updatedAt:new Date().toISOString()}})}));
-  if(!rows.length){msg("没找到可导入的记录。");return}
-  if(DEMO){rows.forEach(({c,o})=>{const i=S[c].findIndex(x=>x.id===o.id);i>=0?S[c][i]=o:S[c].push(o)});closeModal();render();toast(`示例模式：已临时导入 ${rows.length} 条，不会保存`);return}
-  msg("导入中…");
-  const{error}=await sb.from("items").upsert(rows.map(({c,o})=>({id:o.id,kind:c,data:o,user_id:USER.id})),{onConflict:"user_id,id"});
-  if(error){msg("导入失败："+error.message);return}
-  closeModal();await loadAll();toast(`已导入 ${rows.length} 条记录`);};
-
 /* ---------- tabs ---------- */
 $("#tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.tab=b.dataset.t;try{history.replaceState(null,"","#"+S.tab)}catch(_){}render()});
 
@@ -460,7 +446,7 @@ function filtered(){if(!S.filter)return S.apps;const[,fn]=FILTERS[S.filter.type]
 function renderApps(){
   const stale=S.apps.filter(isStale);
   let h=statsHTML();
-  h+=`<div class="toolbar" id="appsList"><div class="seg" id="viewSeg">${[["list","卡片"],["board","看板"]].map(([k,t])=>`<button data-v="${k}" class="${S.view===k?"on":""}">${t}</button>`).join("")}</div>${S.filter&&S.view==="list"?`<span class="fchip">${esc(FILTERS[S.filter.type](S.filter.arg)[0])} · ${filtered().length}<button onclick="filterApps('all')" aria-label="清除筛选">✕</button></span>`:""}<span class="spacer"></span><button class="btn" onclick="openImport()">导入</button><button class="btn pri" onclick="editApp()">＋ 新增投递</button></div>`;
+  h+=`<div class="toolbar" id="appsList"><div class="seg" id="viewSeg">${[["list","卡片"],["board","看板"]].map(([k,t])=>`<button data-v="${k}" class="${S.view===k?"on":""}">${t}</button>`).join("")}</div>${S.filter&&S.view==="list"?`<span class="fchip">${esc(FILTERS[S.filter.type](S.filter.arg)[0])} · ${filtered().length}<button onclick="filterApps('all')" aria-label="清除筛选">✕</button></span>`:""}<span class="spacer"></span><button class="btn pri" onclick="editApp()">＋ 新增投递</button></div>`;
   if(!S.apps.length)return h+emptyBox("还没有投递记录。点「新增投递」添加第一条。");
   h+=S.view==="board"?boardHTML():listHTML();
   return h;
