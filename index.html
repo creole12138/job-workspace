@@ -12,28 +12,29 @@
 <style>
 /* Layout: sage canvas, white rounded cards in a bento grid; black pills for primary actions, lime for "now/active". */
 :root{
-  --bg:#eef2f6;--surface:#ffffff;--sunk:#f1f4f8;--fg:#121722;--muted:#6f7a8a;--line:#e1e7ef;
-  --ink:#121722;--on-ink:#ffffff;--lime:#a7ead2;--on-lime:#0f2a22;--sage:#d5e2ff;--sage-deep:#3f6df6;
-  --accent:#121722;--accent-soft:#e6eeff;
-  --warn:#b7791f;--warn-soft:#fbf0d9;--bad:#d4574b;--bad-soft:#fbe3df;--good:#1f9d77;--good-soft:#dcf5ec;
-  --band:#e2e8f0;--night:#121722;--on-night:#eef2f6;--night-2:#2c3443;--r-lg:24px;--r-md:16px;--r-sm:12px;
+  --bg:#eceff1;--surface:rgba(255,255,255,.72);--solid:#ffffff;--sunk:rgba(20,22,24,.045);--fg:#141516;--muted:#6b7177;--line:rgba(20,22,24,.08);
+  --ink:#141516;--on-ink:#ffffff;--lime:#74d7c4;--on-lime:#0d2420;--sage:#dff4ef;--sage-deep:#141516;
+  --accent:#141516;--accent-soft:#e1f5f0;
+  --warn:#b7791f;--warn-soft:rgba(251,240,217,.85);--bad:#d65f54;--bad-soft:rgba(250,226,222,.9);--good:#2aa592;--good-soft:#dbf3ee;
+  --glass-line:rgba(255,255,255,.9);--shadow:0 1px 2px rgba(20,22,24,.04),0 10px 30px -12px rgba(20,22,24,.12);
+  --band:rgba(20,22,24,.06);--night:#141516;--on-night:#eef0f2;--night-2:#2a2c2f;--r-lg:24px;--r-md:16px;--r-sm:12px;
   --sans:"Noto Sans SC",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
   --num:"Outfit","Noto Sans SC",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f131a;--surface:#171d27;--sunk:#202836;--fg:#e8edf5;--muted:#8c97a8;--line:#2a3342;
-  --ink:#e8edf5;--on-ink:#121722;--lime:#6fd8b4;--on-lime:#0f2a22;--sage:#2a3a5e;--sage-deep:#7d9cff;
-  --accent:#e8edf5;--accent-soft:#1f2c49;--band:#232b38;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}}
+  --bg:#0d0e0f;--surface:rgba(30,32,34,.7);--solid:#1c1e20;--sunk:rgba(255,255,255,.05);--fg:#eef0f2;--muted:#8d9399;--line:rgba(255,255,255,.08);
+  --ink:#eef0f2;--on-ink:#141516;--lime:#74d7c4;--on-lime:#0d2420;--sage:#183330;--sage-deep:#eef0f2;
+  --accent:#eef0f2;--accent-soft:#163430;--glass-line:rgba(255,255,255,.06);--shadow:0 10px 30px -12px rgba(0,0,0,.6);--band:rgba(255,255,255,.06);--night:#000;--on-night:#eef0f2;--night-2:#2a2c2f;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#74d7c4;--good-soft:#163430;color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f131a;--surface:#171d27;--sunk:#202836;--fg:#e8edf5;--muted:#8c97a8;--line:#2a3342;
-  --ink:#e8edf5;--on-ink:#121722;--lime:#6fd8b4;--on-lime:#0f2a22;--sage:#2a3a5e;--sage-deep:#7d9cff;
-  --accent:#e8edf5;--accent-soft:#1f2c49;--band:#232b38;--night:#0b0f15;--on-night:#e8edf5;--night-2:#2a3342;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#5fd0a6;--good-soft:#173a2f;color-scheme:dark}
+  --bg:#0d0e0f;--surface:rgba(30,32,34,.7);--solid:#1c1e20;--sunk:rgba(255,255,255,.05);--fg:#eef0f2;--muted:#8d9399;--line:rgba(255,255,255,.08);
+  --ink:#eef0f2;--on-ink:#141516;--lime:#74d7c4;--on-lime:#0d2420;--sage:#183330;--sage-deep:#eef0f2;
+  --accent:#eef0f2;--accent-soft:#163430;--glass-line:rgba(255,255,255,.06);--shadow:0 10px 30px -12px rgba(0,0,0,.6);--band:rgba(255,255,255,.06);--night:#000;--on-night:#eef0f2;--night-2:#2a2c2f;--warn:#e0a948;--warn-soft:#3a2f1a;--bad:#ef8a7c;--bad-soft:#3d2421;--good:#74d7c4;--good-soft:#163430;color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5}
+body{background:radial-gradient(900px 500px at 85% -10%,rgba(116,215,196,.28),transparent 60%),radial-gradient(700px 500px at -10% 30%,rgba(116,215,196,.14),transparent 60%),var(--bg);background-attachment:fixed;color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
 header .wrap{padding-block:0}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:transparent;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .hbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:14px}
 h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.01em}
 .tabs{display:flex;gap:6px}
@@ -52,8 +53,12 @@ button,select,input,textarea{font:inherit;color:inherit}
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-block:20px 14px}
 .seg{display:inline-flex;gap:4px;background:var(--surface);padding:4px;border-radius:999px}
 .seg button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;color:var(--muted)}
-.seg button.on{background:var(--lime);color:var(--on-lime);font-weight:500}
+.seg button.on{background:var(--ink);color:var(--on-ink);font-weight:500}
 .spacer{flex:1}
+/* glass surfaces */
+.tile,.acard,.rv,.ocard,.calbox,.empty,.modal,.tabs button,.seg,.sync,.btn{backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}
+.tile,.acard,.rv,.ocard,.empty,.modal{border:1px solid var(--glass-line);box-shadow:var(--shadow)}
+.modal{background:var(--solid)}
 /* overview: left = KPIs + funnel ring, right = calendar */
 .ov{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:12px;margin-top:12px;align-items:stretch}
 .ovl{display:flex}.ovl>.tile{flex:1}
@@ -67,15 +72,15 @@ button,select,input,textarea{font:inherit;color:inherit}
 .fhint{font-size:12px;color:var(--muted)}
 @media (max-width:640px){.fhint{display:none}}
 .tile{background:var(--surface);border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.tile.lime{background:var(--lime);color:var(--on-lime)}
-.tile.sage{background:var(--sage-deep);color:#fff}
-.tile.sage .icon{background:rgba(255,255,255,.22);color:#fff}
+.tile.lime{background:linear-gradient(135deg,#8fe3d3,var(--lime));color:var(--on-lime);border-color:rgba(255,255,255,.5)}
+.tile.sage{background:#141516;color:#fff;border-color:rgba(255,255,255,.08)}
+.tile.sage .icon{background:var(--lime);color:var(--on-lime)}
 .lbl{font-size:12px;opacity:.75;letter-spacing:.02em}
 .big{font-family:var(--num);font-size:38px;line-height:1;font-weight:500;font-variant-numeric:tabular-nums}
 .big small{font-size:14px;opacity:.7;margin-left:4px}
 @media (max-width:420px){.kpis .tile{padding:14px}.big{font-size:30px}.kpis .row .lbl{display:block;width:100%}}
 .icon{width:32px;height:32px;border-radius:999px;background:var(--surface);color:var(--fg);display:grid;place-items:center;flex:none}
-.icon.soft{background:var(--accent-soft);color:var(--sage-deep)}
+.icon.soft{background:var(--accent-soft);color:var(--good)}
 .icon svg{width:16px;height:16px}
 .funnel{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .fring{width:230px;height:230px;max-width:100%;flex:none;color:var(--fg)}
@@ -138,10 +143,10 @@ button,select,input,textarea{font:inherit;color:inherit}
 .cc.out{opacity:.35}
 .cc .d{font-family:var(--num);font-size:12px;width:22px;height:22px;display:grid;place-items:center;border-radius:999px}
 .cc.today .d{background:var(--ink);color:var(--on-ink)}
-.cc.has{background:var(--accent-soft)}
+.cc.has{background:rgba(116,215,196,.16)}
 .cc.has.clash{background:var(--bad-soft)}
-.cc.sel{box-shadow:inset 0 0 0 2px var(--sage-deep)}
-.evc{display:block;font-size:10.5px;line-height:1.3;padding:3px 6px;border-radius:7px;background:var(--sage-deep);color:#fff;min-width:0}
+.cc.sel{box-shadow:inset 0 0 0 2px var(--lime)}
+.evc{display:block;font-size:10.5px;line-height:1.3;padding:3px 6px;border-radius:7px;background:var(--ink);color:var(--on-ink);min-width:0}
 .evc .txt{display:flex;flex-direction:column}
 .evc .txt>*{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .evc b{font-weight:600;font-family:var(--num)}
@@ -152,7 +157,7 @@ button,select,input,textarea{font:inherit;color:inherit}
 @media (max-width:560px){.cc{min-height:48px;padding:3px;align-items:center}.evc{width:100%;height:5px;padding:0}.evc .txt{display:none}.cal{gap:2px}}
 .calleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
 .calleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.lg-int{background:var(--sage-deep)}.lg-test{background:var(--lime)}.lg-clash{background:var(--bad)}
+.lg-int{background:var(--ink)}.lg-test{background:var(--lime)}.lg-clash{background:var(--bad)}
 .todo{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);cursor:pointer;font-size:13px;min-width:0}
 .row+.todo{border-top:0}
 .avatar.sm{width:28px;height:28px;font-size:12px}
@@ -177,7 +182,7 @@ button,select,input,textarea{font:inherit;color:inherit}
 /* offers */
 .ocards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .ocard{background:var(--surface);border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
-.ocard.best{background:var(--lime);color:var(--on-lime)}
+.ocard.best{background:linear-gradient(150deg,#9be6d8,var(--lime));color:var(--on-lime)}
 .ocard.best .sub,.ocard.best .lbl{color:var(--on-lime)}
 .ocard .ring{width:64px;height:64px;flex:none}
 .meter{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;align-items:center;font-size:12px}
@@ -359,8 +364,8 @@ function funnelSVG(steps,n){
   let band="",rings="",txt="";
   for(let i=0;i<N-1;i++)band+=`<polygon points="${xs[i]},${cy-rs[i]*.72} ${xs[i+1]},${cy-rs[i+1]*.72} ${xs[i+1]},${cy+rs[i+1]*.72} ${xs[i]},${cy+rs[i]*.72}" fill="var(--band)"/>`;
   steps.forEach(([st,v],i)=>{const r=rs[i],sw=Math.max(7,r*.3),rr=r-sw/2,C=2*Math.PI*rr,f=n?v/n:0;
-    rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${r}" fill="var(--surface)"/><circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="var(--sunk)" stroke-width="${sw}"/>`;
-    if(f>0)rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="${i===N-1?"var(--good)":"var(--sage-deep)"}" stroke-width="${sw}" stroke-dasharray="${f>=1?C:f*C} ${C}" transform="rotate(-90 ${xs[i]} ${cy})"/>`;
+    rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${r}" fill="var(--solid)"/><circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="var(--sunk)" stroke-width="${sw}"/>`;
+    if(f>0)rings+=`<circle cx="${xs[i]}" cy="${cy}" r="${rr}" fill="none" stroke="${i===N-1?"var(--lime)":"var(--ink)"}" stroke-width="${sw}" stroke-dasharray="${f>=1?C:f*C} ${C}" transform="rotate(-90 ${xs[i]} ${cy})"/>`;
     const pct=n?(v/n*100):0;
     txt+=`<text x="${xs[i]}" y="${cy+4}" text-anchor="middle" font-size="${r>40?17:13}" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${pct>=99.95?"100":pct.toFixed(pct<10&&pct>0?1:0)}%</text>`;
     txt+=`<text x="${xs[i]}" y="${cy-R-44}" text-anchor="middle" font-size="15" fill="var(--muted)">${st}</text><text x="${xs[i]}" y="${cy-R-14}" text-anchor="middle" font-size="26" font-family="Outfit,sans-serif" font-weight="500" fill="var(--fg)">${v}</text>`;
@@ -498,7 +503,7 @@ window.showCoReviews=id=>{const a=S.apps.find(x=>x.id===id);const ids=S.apps.fil
 function reviewHTML(r,compact){
   const a=S.apps.find(x=>x.id===r.appId);
   const qs=(r.questions||[]).filter(q=>!S.rvType||compact||q.type===S.rvType);
-  const all=r.questions||[];const QC={"专业题":"var(--ink)","行为题":"var(--sage-deep)","案例题":"var(--lime)","背景题":"#9db8ff"};
+  const all=r.questions||[];const QC={"专业题":"var(--ink)","行为题":"#5d6369","案例题":"var(--lime)","背景题":"#b9ece2"};
   const weakN=all.filter(q=>q.weak).length;
   return `<article class="rv"><div class="ahead"><span class="avatar">${avatarOf(a?.company)}</span><div style="flex:1;min-width:0"><b>${esc(a?.company||"已删除")}</b><div class="sub">${esc(a?.role||"")}</div></div><span class="chip stage">${esc(r.round)}</span></div>
   <div class="row sub"><span class="mono">${esc(r.date)}</span><span>· ${all.length} 题</span>${weakN?`<span class="chip bad">${weakN} 处没答好</span>`:`<span class="chip good">都答上了</span>`}</div>
@@ -548,7 +553,7 @@ function renderOffers(){
   return `<div class="toolbar"><b style="font-size:16px">Offer 对比</b><span class="spacer"></span><button class="btn pri" onclick="editOffer()">＋ 新增 Offer</button></div>
   ${rows.length?`<div class="ocards">${rows.sort((a,b)=>b.c.score-a.c.score).map(({o,c})=>`<article class="ocard ${o.id===best?"best":""}">
     <div class="ahead"><div style="flex:1;min-width:0"><div class="co" style="font-size:16px">${esc(o.company)}</div><div class="sub">${esc(o.role)} · ${esc(o.city)}</div>${o.id===best?'<span class="chip" style="background:var(--ink);color:var(--on-ink);margin-top:6px">综合分最高</span>':""}</div>
-      <div style="color:inherit">${donut([{v:c.score,c:o.id===best?"#16181a":"var(--ink)"},{v:100-c.score,c:"transparent"}],64,c.score)}</div></div>
+      <div style="color:inherit">${donut([{v:c.score,c:o.id===best?"#0d2420":"var(--ink)"},{v:100-c.score,c:"transparent"}],64,c.score)}</div></div>
     <div><div class="lbl">年包（现金）</div><div class="big" style="font-size:32px">${money(c.total,o.currency)}</div><div class="sub">${money(o.monthly,o.currency)} × ${esc(o.months)} 个月${+o.extraCash?` + 其他 ${money(o.extraCash,o.currency)}`:""}</div></div>
     <div class="kv"><div><span class="lbl">${o.currency==="CNY"?"公积金":"公积金 / CPF"}</span><b>${esc(o.fundPct)}%</b><span class="sub">约 ${money(c.fund,o.currency)}/年</span></div><div><span class="lbl">月薪</span><b>${money(o.monthly,o.currency)}</b><span class="sub">${esc(o.currency)}</span></div></div>
     <div style="display:flex;flex-direction:column;gap:6px">${pips(+o.growth||0,"成长空间")}${pips(+o.intensity||0,"工作强度")}${pips(+o.fit||0,"匹配度")}</div>
