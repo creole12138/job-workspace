@@ -517,6 +517,10 @@ window.syncApp=()=>{const a=draft;["company","role","city","channel","appliedAt"
   (a.events||[]).forEach((e,i)=>{if($("#ev_t"+i)){e.type=$("#ev_t"+i).value;e.at=$("#ev_a"+i).value;e.dur=+$("#ev_d"+i).value||60}})};
 window.commitApp=()=>{syncApp();const a=draft;if(!a.company){toast("请填写公司");return}
   const old=S.apps.find(x=>x.id===a.id);
+  // keep 下一步时间 and the matching 笔试/面试安排 in sync, whichever one was edited
+  if(old&&old.nextAt){const oe=old.events||[];a.events=a.events||[];
+    if(a.nextAt&&a.nextAt!==old.nextAt)a.events.forEach((e,i)=>{if(e.at===old.nextAt&&oe[i]&&oe[i].at===old.nextAt)e.at=a.nextAt});
+    else if(a.nextAt===old.nextAt){const i=oe.findIndex(e=>e.at===old.nextAt);if(i>=0&&a.events[i]&&a.events[i].at&&a.events[i].at!==old.nextAt)a.nextAt=a.events[i].at}}
   if(old&&old.stage!==a.stage){a.history=[...(a.history||[]),old.stage];a.progressAt=todayStr()}
   else if(old&&(old.nextStep!==a.nextStep||old.nextAt!==a.nextAt||JSON.stringify(old.events)!==JSON.stringify(a.events)))a.progressAt=todayStr();
   delete a.example;save("apps",a);closeModal()};
