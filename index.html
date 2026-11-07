@@ -173,6 +173,10 @@ button,select,input,textarea{font:inherit;color:inherit}
 .calleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
 .calleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .lg-int{background:var(--ink)}.lg-test{background:var(--lime)}.lg-clash{background:var(--bad)}
+.donebtn{width:26px;height:26px;flex:none;border-radius:999px;border:1.5px solid var(--line);background:var(--solid);color:var(--muted);cursor:pointer;font-size:12px;display:grid;place-items:center;padding:0}
+.donebtn:hover,.donebtn:focus-visible{background:var(--lime);border-color:var(--lime);color:var(--on-lime)}
+.donelog{display:flex;flex-direction:column;gap:4px;font-size:13px;max-height:140px;overflow:auto}
+.donelog>div{display:flex;gap:10px}
 .todo{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);cursor:pointer;font-size:13px;min-width:0}
 .row+.todo{border-top:0}
 .avatar.sm{width:28px;height:28px;font-size:12px}
@@ -412,7 +416,7 @@ function todoCard(){
   const todos=S.apps.filter(a=>a.nextStep&&a.stage!=="未通过").sort((a,b)=>(a.nextAt||"9").localeCompare(b.nextAt||"9"));
   return `<div class="tile"><div class="row"><span class="lbl">${S.calSel?`${+S.calSel.slice(5,7)} 月 ${+S.calSel.slice(8)} 日`:"接下来的安排"}</span><span class="chip">${list.length}</span><span class="spacer"></span>${S.calSel?`<button class="btn sm ghost" onclick="S.calSel=null;render()">看全部</button>`:""}</div>
   ${list.length?list.slice(0,6).map(e=>`<div class="mrow ${e.clash?"clash":""}" onclick="editApp('${e.app.id}')"><div class="t">${e.at.slice(11,16)}<small>${+e.at.slice(5,7)}/${+e.at.slice(8,10)} · ${e.dur||60} 分钟</small></div><div style="min-width:0"><b class="one" style="display:block">${esc(e.app.company)}</b><div class="sub one">${esc(e.type)}${e.clash?" · 时间冲突":""}</div></div></div>`).join(""):`<span class="sub">${S.calSel?"这天没有安排。点日历上的日期查看。":"暂无笔试 / 面试。"}</span>`}
-  ${todos.length?`<div class="row" style="margin-top:6px"><span class="lbl">待办的下一步</span><span class="chip">${todos.length}</span></div>${todos.slice(0,5).map(a=>`<div class="todo" onclick="editApp('${a.id}')"><span class="avatar sm">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="one">${esc(a.nextStep)}</div><div class="sub one">${esc(a.company.replace(/（.*?）/,""))}</div></div>${a.nextAt?`<span class="nl-t">${shortDT(a.nextAt)}</span>`:""}</div>`).join("")}`:""}
+  ${todos.length?`<div class="row" style="margin-top:6px"><span class="lbl">待办的下一步</span><span class="chip">${todos.length}</span></div>${todos.slice(0,5).map(a=>`<div class="todo" onclick="editApp('${a.id}')"><span class="avatar sm">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="one">${esc(a.nextStep)}</div><div class="sub one">${esc(a.company.replace(/（.*?）/,""))}</div></div>${a.nextAt?`<span class="nl-t">${shortDT(a.nextAt)}</span>`:""}<button class="donebtn" onclick="event.stopPropagation();doneStep('${a.id}')" title="标记完成" aria-label="标记完成：${esc(a.nextStep)}">✓</button></div>`).join("")}`:""}
   ${stale.length?`<div class="stalebox click" role="button" tabindex="0" onclick="filterApps('stale')"><span class="nl-ic">${ICON.bell}</span><span class="one"><b>${stale.length}</b> 条超过 ${STALE_DAYS} 天没进展：${stale.map(a=>esc(a.company.replace(/（.*?）/,""))).join("、")}</span></div>`:""}</div>`;
 }
 function calCard(){
@@ -462,7 +466,7 @@ function listHTML(){
   return `<article class="acard ${isStale(a)?"stale":""}" onclick="if(!event.target.closest('button'))editApp('${a.id}')" tabindex="0">
     <div class="ahead"><span class="avatar">${avatarOf(a.company)}</span><div style="min-width:0;flex:1"><div class="co">${esc(a.company.replace(/（.*?）/,""))}</div><div class="sub one">${esc(a.role)}</div></div>${stageChip(a)}</div>
     ${progBar(a)}
-    ${a.nextStep&&!isClosed(a)||a.stage==="Offer"&&a.nextStep?`<div class="nextline"><span class="nl-ic">${ICON.clock}</span><span class="one">${esc(a.nextStep)}</span>${a.nextAt?`<span class="nl-t">${shortDT(a.nextAt)}</span>`:""}</div>`:""}
+    ${a.nextStep&&!isClosed(a)||a.stage==="Offer"&&a.nextStep?`<div class="nextline"><span class="nl-ic">${ICON.clock}</span><span class="one">${esc(a.nextStep)}</span>${a.nextAt?`<span class="nl-t">${shortDT(a.nextAt)}</span>`:""}<button class="donebtn" onclick="doneStep('${a.id}')" title="标记完成" aria-label="标记完成：${esc(a.nextStep)}">✓</button></div>`:""}
     <div class="afoot"><span>${esc(a.city)}</span><span>${esc(a.channel)}</span>${isStale(a)?`<span class="chip stale">${d} 天无进展</span>`:""}<span class="spacer"></span>${rc?`<button class="btn sm ghost" onclick="showCoReviews('${a.id}')">复盘 ${rc}</button>`:`<button class="btn sm ghost" onclick="editReview(null,'${a.id}')">写复盘</button>`}</div></article>`}).join("")}</div>`;
 }
 function boardHTML(){
@@ -507,7 +511,7 @@ function drawAppModal(isNew){
     <label class="f">阶段<select id="f_stage">${opt(STAGES,a.stage)}</select></label>
     <label class="f">下一步事项<input id="f_nextStep" value="${esc(a.nextStep)}"></label>
     <label class="f">下一步时间<input type="datetime-local" id="f_nextAt" value="${esc(a.nextAt)}"></label>
-    <label class="f full">备注<textarea id="f_notes">${esc(a.notes)}</textarea></label>
+    <label class="f full">备注<textarea id="f_notes">${esc(a.notes)}</textarea></label>${(a.log||[]).length?`<div class="full"><div class="lbl" style="margin-bottom:6px">已完成</div><div class="donelog">${[...a.log].reverse().map(l=>`<div><span class="mono sub">${+l.date.slice(5,7)}/${+l.date.slice(8,10)}</span><span>✓ ${esc(l.text)}</span></div>`).join("")}</div></div>`:""}
   </div>
   <div><div class="row" style="justify-content:space-between"><b>笔试 / 面试安排</b><button class="btn sm" onclick="syncApp();draft.events.push({type:'一面',at:'',dur:60});drawAppModal(${isNew})">＋ 添加</button></div>
   <div class="sublist" style="margin-top:8px">${(a.events||[]).map((e,i)=>`<div class="row"><select id="ev_t${i}" class="btn sm">${opt(EVTYPES,e.type)}</select><input type="datetime-local" id="ev_a${i}" value="${esc(e.at)}" class="btn sm"><input type="number" id="ev_d${i}" value="${e.dur||60}" min="10" step="10" class="btn sm" style="width:72px"><span class="sub">分钟</span><button class="btn sm del" onclick="syncApp();draft.events.splice(${i},1);drawAppModal(${isNew})">删除</button></div>`).join("")||`<span class="sub">还没有安排。</span>`}</div></div>
@@ -524,6 +528,19 @@ window.commitApp=()=>{syncApp();const a=draft;if(!a.company){toast("请填写公
   if(old&&old.stage!==a.stage){a.history=[...(a.history||[]),old.stage];a.progressAt=todayStr()}
   else if(old&&(old.nextStep!==a.nextStep||old.nextAt!==a.nextAt||JSON.stringify(old.events)!==JSON.stringify(a.events)))a.progressAt=todayStr();
   delete a.example;save("apps",a);closeModal()};
+window.doneStep=id=>{const a=S.apps.find(x=>x.id===id);if(!a)return;const i=STAGES.indexOf(a.stage);const nx=!isClosed(a)&&i<6?STAGES[i+1]:null;
+  openModal(`<h2>完成这一步</h2>
+  <div class="nextline"><span class="nl-ic">✓</span><span><b>${esc(a.nextStep)}</b><span class="sub"> · ${esc(a.company.replace(/（.*?）/,""))}</span></span></div>
+  ${nx?`<label class="row" style="font-size:14px;cursor:pointer"><input type="checkbox" id="d_adv"> 同时推进到「${nx}」<span class="sub">当前在「${esc(a.stage)}」</span></label>`:""}
+  <div class="grid2"><label class="f">接下来做什么（可不填）<input id="d_next" placeholder="例如：等二面通知"></label><label class="f">时间（可不填）<input type="datetime-local" id="d_at"></label></div>
+  <div class="sub">完成的事会记到这条投递的「已完成」记录里。</div>
+  <div class="row"><span class="spacer"></span><button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="commitDone('${a.id}')">完成</button></div>`);
+  setTimeout(()=>$("#d_next")?.focus(),0)};
+window.commitDone=id=>{const a=structuredClone(S.apps.find(x=>x.id===id));const t=todayStr();
+  a.log=[...(a.log||[]),{date:t,text:a.nextStep}];
+  a.nextStep=$("#d_next").value.trim();a.nextAt=a.nextStep?$("#d_at").value:"";
+  if($("#d_adv")?.checked){const i=STAGES.indexOf(a.stage);a.history=[...(a.history||[]),a.stage];a.stage=STAGES[i+1]}
+  a.progressAt=t;save("apps",a);closeModal()};
 window.confirmDel=(c,id,btn)=>{if(btn.dataset.sure){remove(c,id);closeModal()}else{btn.dataset.sure=1;btn.textContent="再点一次确认删除"}};
 
 /* reviews for one company */
