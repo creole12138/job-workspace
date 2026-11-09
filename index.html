@@ -252,7 +252,7 @@ textarea{min-height:64px;resize:vertical}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-const STAGES=["已投递","简历评估","笔试","一面","二面","HR 面","Offer","未通过"];
+const STAGES=["待投递","简历评估","笔试","一面","二面","HR 面","Offer","未通过"];
 const INTERVIEW_STAGES=["一面","二面","HR 面"];
 const CHANNELS=["官网","内推","招聘平台","其他"];
 const EVTYPES=["笔试","一面","二面","HR 面","其他"];
@@ -293,18 +293,20 @@ async function loadAll(){
   setSync("同步中…");
   const{data,error}=await sb.from("items").select("id,kind,data");
   if(error){setSync("读取失败："+error.message);return}
+  const ren=v=>v==="已投递"?"待投递":v;
   COLS.forEach(c=>S[c]=data.filter(r=>r.kind===c).map(r=>({...r.data,id:r.id})));
+  S.apps=S.apps.map(a=>({...a,stage:ren(a.stage),history:(a.history||[]).map(ren)}));
   setSync("已同步 · "+(USER.email||""));render();
 }
 /* demo data: fictional, dates relative to today */
 function dshift(n,t){const d=new Date();d.setDate(d.getDate()+n);const s=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");return t?s+"T"+t:s}
 function demoData(){return{
   apps:[
-    {id:"d1",company:"星图智能（虚构）",role:"AI 产品经理",city:"新加坡",channel:"内推",appliedAt:dshift(-16),stage:"一面",nextStep:"一面：产品 sense + 项目深挖",nextAt:dshift(5,"14:00"),notes:"JD 侧重 Agent 落地",events:[{type:"笔试",at:dshift(-12,"10:00"),dur:60},{type:"一面",at:dshift(5,"14:00"),dur:60}],history:["已投递","简历评估","笔试"],progressAt:dshift(-9)},
-    {id:"d2",company:"云帆科技（虚构）",role:"Forward Deployed Engineer",city:"新加坡",channel:"官网",appliedAt:dshift(-10),stage:"二面",nextStep:"二面：系统设计",nextAt:dshift(5,"14:30"),notes:"和星图一面时间冲突，需改期",events:[{type:"一面",at:dshift(-3,"11:00"),dur:45},{type:"二面",at:dshift(5,"14:30"),dur:60}],history:["已投递","简历评估","一面"],progressAt:dshift(-3)},
-    {id:"d3",company:"远山模型（虚构）",role:"Agent 产品经理",city:"北京",channel:"招聘平台",appliedAt:dshift(-20),stage:"已投递",nextStep:"等 HR 回复",nextAt:"",notes:"",events:[],history:[],progressAt:dshift(-20)},
-    {id:"d4",company:"海湾出行（虚构）",role:"Senior PM, AI Platform",city:"新加坡",channel:"内推",appliedAt:dshift(-40),stage:"Offer",nextStep:"周五前回复 offer",nextAt:dshift(2,"18:00"),notes:"",events:[{type:"HR 面",at:dshift(-8,"16:00"),dur:30}],history:["已投递","简历评估","一面","二面","HR 面"],progressAt:dshift(-4)},
-    {id:"d5",company:"青石数据（虚构）",role:"AI 解决方案架构师",city:"上海",channel:"官网",appliedAt:dshift(-30),stage:"未通过",nextStep:"",nextAt:"",notes:"二面后未通过",events:[],history:["已投递","简历评估","一面","二面"],progressAt:dshift(-14)}],
+    {id:"d1",company:"星图智能（虚构）",role:"AI 产品经理",city:"新加坡",channel:"内推",appliedAt:dshift(-16),stage:"一面",nextStep:"一面：产品 sense + 项目深挖",nextAt:dshift(5,"14:00"),notes:"JD 侧重 Agent 落地",events:[{type:"笔试",at:dshift(-12,"10:00"),dur:60},{type:"一面",at:dshift(5,"14:00"),dur:60}],history:["待投递","简历评估","笔试"],progressAt:dshift(-9)},
+    {id:"d2",company:"云帆科技（虚构）",role:"Forward Deployed Engineer",city:"新加坡",channel:"官网",appliedAt:dshift(-10),stage:"二面",nextStep:"二面：系统设计",nextAt:dshift(5,"14:30"),notes:"和星图一面时间冲突，需改期",events:[{type:"一面",at:dshift(-3,"11:00"),dur:45},{type:"二面",at:dshift(5,"14:30"),dur:60}],history:["待投递","简历评估","一面"],progressAt:dshift(-3)},
+    {id:"d3",company:"远山模型（虚构）",role:"Agent 产品经理",city:"北京",channel:"招聘平台",appliedAt:dshift(-20),stage:"待投递",nextStep:"等 HR 回复",nextAt:"",notes:"",events:[],history:[],progressAt:dshift(-20)},
+    {id:"d4",company:"海湾出行（虚构）",role:"Senior PM, AI Platform",city:"新加坡",channel:"内推",appliedAt:dshift(-40),stage:"Offer",nextStep:"周五前回复 offer",nextAt:dshift(2,"18:00"),notes:"",events:[{type:"HR 面",at:dshift(-8,"16:00"),dur:30}],history:["待投递","简历评估","一面","二面","HR 面"],progressAt:dshift(-4)},
+    {id:"d5",company:"青石数据（虚构）",role:"AI 解决方案架构师",city:"上海",channel:"官网",appliedAt:dshift(-30),stage:"未通过",nextStep:"",nextAt:"",notes:"二面后未通过",events:[],history:["待投递","简历评估","一面","二面"],progressAt:dshift(-14)}],
   reviews:[
     {id:"r1",appId:"d1",round:"笔试",date:dshift(-12),questions:[{type:"案例题",q:"为一款出海 AI 助手设计首月留存提升方案",answer:"先拆新用户激活路径，找到首个价值时刻，再设计引导和召回",weak:"没给出具体指标口径和实验设计"},{type:"专业题",q:"如何评估一个 Agent 的任务完成率",answer:"按任务类型定义成功标准，人工抽检 + 自动评测",weak:""}],improve:"案例题先说清目标指标和衡量方式"},
     {id:"r2",appId:"d2",round:"一面",date:dshift(-3),questions:[{type:"行为题",q:"讲一次推动跨团队项目落地的经历",answer:"用电商项目举例，讲对齐目标和节奏",weak:"结果数据说得不够具体"},{type:"背景题",q:"为什么从产品转向 FDE",answer:"工程 + 业务的复合背景，适合一线落地",weak:""}],improve:"行为题准备 2 个带数字的 STAR 故事"}],
@@ -496,7 +498,7 @@ window.closeModal=()=>{$("#modalRoot").innerHTML="";draft=null};
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();if(e.key==="Enter"&&e.target.matches?.(".click,.acard")&&!e.target.closest("svg"))e.target.click()});
 const opt=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${x}</option>`).join("");
 window.editApp=id=>{
-  const a=id?structuredClone(S.apps.find(x=>x.id===id)):{id:newId("app"),company:"",role:"",city:"",channel:"官网",appliedAt:todayStr(),stage:"已投递",nextStep:"",nextAt:"",notes:"",events:[],history:[],progressAt:todayStr()};
+  const a=id?structuredClone(S.apps.find(x=>x.id===id)):{id:newId("app"),company:"",role:"",city:"",channel:"官网",appliedAt:todayStr(),stage:"待投递",nextStep:"",nextAt:"",notes:"",events:[],history:[],progressAt:todayStr()};
   draft=a;drawAppModal(!id);
 };
 function drawAppModal(isNew){
