@@ -59,6 +59,23 @@ button,select,input,textarea{font:inherit;color:inherit}
 .tile,.acard,.rv,.ocard,.calbox,.empty,.modal,.tabs button,.seg,.sync,.btn{backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%)}
 .tile,.acard,.rv,.ocard,.empty,.modal{border:1px solid var(--glass-line);box-shadow:var(--shadow)}
 .modal{background:var(--solid)}
+.evsec{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:16px}
+.evhead{display:flex;align-items:center;justify-content:space-between}
+.evtitle{font-weight:600}
+.linkbtn{border:0;background:none;padding:6px 4px;font:inherit;color:var(--fg);cursor:pointer;font-weight:500}
+.linkbtn:hover{text-decoration:underline;text-underline-offset:4px}
+.linkbtn.danger{color:var(--bad);font-weight:400}
+.evrow{display:grid;grid-template-columns:120px minmax(0,1fr) 120px 40px;gap:10px;align-items:end;background:var(--sunk);border-radius:var(--r-md);padding:12px}
+.evrow label.f input,.evrow label.f select{background:var(--solid);height:44px}
+.ev-x{margin-bottom:2px}
+.modal{background:var(--solid)!important}
+.suffix{position:relative;display:block}
+.suffix input{padding-right:46px!important}
+.suffix em{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--muted);pointer-events:none}
+.iconbtn{width:40px;height:40px;border-radius:999px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:16px}
+.iconbtn:hover{background:var(--bad-soft);color:var(--bad)}
+@media (max-width:560px){.evrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}.ev-a{grid-column:1/-1;grid-row:1}}
+.mfoot{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding-top:16px;position:sticky;bottom:-22px;background:var(--solid);margin:0 -22px -22px;padding:16px 22px 22px;border-radius:0 0 var(--r-lg) var(--r-lg)}
 /* clickable */
 .click,.acard,.cc,.mrow,.todo{cursor:pointer;transition:transform .15s,box-shadow .15s}
 .tile.click:hover,.rv.click:hover,.ocard.click:hover,.acard:hover{transform:translateY(-2px);box-shadow:0 14px 34px -14px rgba(20,22,24,.25)}
@@ -515,9 +532,14 @@ function drawAppModal(isNew){
     <label class="f">下一步时间<input type="datetime-local" id="f_nextAt" value="${esc(a.nextAt)}"></label>
     <label class="f full">备注<textarea id="f_notes">${esc(a.notes)}</textarea></label>${(a.log||[]).length?`<div class="full"><div class="lbl" style="margin-bottom:6px">已完成</div><div class="donelog">${[...a.log].reverse().map(l=>`<div><span class="mono sub">${+l.date.slice(5,7)}/${+l.date.slice(8,10)}</span><span>✓ ${esc(l.text)}</span></div>`).join("")}</div></div>`:""}
   </div>
-  <div><div class="row" style="justify-content:space-between"><b>笔试 / 面试安排</b><button class="btn sm" onclick="syncApp();draft.events.push({type:'一面',at:'',dur:60});drawAppModal(${isNew})">＋ 添加</button></div>
-  <div class="sublist" style="margin-top:8px">${(a.events||[]).map((e,i)=>`<div class="row"><select id="ev_t${i}" class="btn sm">${opt(EVTYPES,e.type)}</select><input type="datetime-local" id="ev_a${i}" value="${esc(e.at)}" class="btn sm"><input type="number" id="ev_d${i}" value="${e.dur||60}" min="10" step="10" class="btn sm" style="width:72px"><span class="sub">分钟</span><button class="btn sm del" onclick="syncApp();draft.events.splice(${i},1);drawAppModal(${isNew})">删除</button></div>`).join("")||`<span class="sub">还没有安排。</span>`}</div></div>
-  <div class="row">${isNew?"":`<button class="btn del" id="delBtn" onclick="confirmDel('apps','${a.id}',this)">删除</button>`}<span class="spacer"></span><button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="commitApp()">保存</button></div>`);
+  <section class="evsec"><div class="evhead"><span class="evtitle">笔试 / 面试安排</span><button class="linkbtn" onclick="syncApp();draft.events.push({type:'一面',at:'',dur:60});drawAppModal(${isNew})">＋ 添加安排</button></div>
+  ${(a.events||[]).length?(a.events||[]).map((e,i)=>`<div class="evrow">
+    <label class="f ev-t">类型<select id="ev_t${i}">${opt(EVTYPES,e.type)}</select></label>
+    <label class="f ev-a">时间<input type="datetime-local" id="ev_a${i}" value="${esc(e.at)}"></label>
+    <label class="f ev-d">时长<span class="suffix"><input type="number" id="ev_d${i}" value="${e.dur||60}" min="10" step="5"><em>分钟</em></span></label>
+    <button class="iconbtn ev-x" onclick="syncApp();draft.events.splice(${i},1);drawAppModal(${isNew})" aria-label="删除这项安排" title="删除这项安排">✕</button>
+  </div>`).join(""):`<div class="sub">还没有安排。</div>`}</section>
+  <footer class="mfoot">${isNew?"":`<button class="linkbtn danger" id="delBtn" onclick="confirmDel('apps','${a.id}',this)">删除这条投递</button>`}<span class="spacer"></span><button class="btn" onclick="closeModal()">取消</button><button class="btn pri" onclick="commitApp()">保存</button></footer>`);
 }
 window.syncApp=()=>{const a=draft;["company","role","city","channel","appliedAt","stage","nextStep","nextAt","notes"].forEach(k=>{const el=$("#f_"+k);if(el)a[k]=el.value.trim()});
   (a.events||[]).forEach((e,i)=>{if($("#ev_t"+i)){e.type=$("#ev_t"+i).value;e.at=$("#ev_a"+i).value;e.dur=+$("#ev_d"+i).value||60}})};
